@@ -1,0 +1,3005 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full antialiased"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Scrivener Mobile">
+  <meta name="application-name" content="Scrivener Mobile">
+  <meta name="theme-color" content="#231b14">
+  <link rel="manifest" href="manifest.json">
+  <link id="dynamicFavicon" rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link id="dynamicTouchIcon" rel="apple-touch-icon" href="icon-192.png">
+  <title>Scrivener Mobile</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&amp;family=Inter:wght@400;500;600;700&amp;family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&amp;display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-serif: 'Literata', Georgia, serif;
+      --font-mono: 'Courier Prime', monospace;
+    }
+    body {
+      font-family: var(--font-sans);
+      overscroll-behavior-y: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .editor-font-serif { font-family: var(--font-serif); }
+    .editor-font-sans { font-family: var(--font-sans); }
+    .editor-font-mono { font-family: var(--font-mono); }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(120, 113, 108, 0.35); border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(120, 113, 108, 0.55); }
+
+    /* Corkboard texture effect */
+    .corkboard-bg {
+      background-color: #d6c3a5;
+      background-image: radial-gradient(rgba(120, 85, 45, 0.14) 1px, transparent 0),
+                        radial-gradient(rgba(90, 60, 30, 0.1) 1px, transparent 0);
+      background-size: 16px 16px;
+      background-position: 0 0, 8px 8px;
+    }
+    .dark .corkboard-bg {
+      background-color: #262320;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 0),
+                        radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 0);
+      background-size: 16px 16px;
+      background-position: 0 0, 8px 8px;
+    }
+
+    /* Index card lined look */
+    .index-card-lines {
+      background-image: repeating-linear-gradient(
+        to bottom,
+        transparent,
+        transparent 23px,
+        rgba(214, 211, 209, 0.45) 24px
+      );
+    }
+    .dark .index-card-lines {
+      background-image: repeating-linear-gradient(
+        to bottom,
+        transparent,
+        transparent 23px,
+        rgba(68, 64, 60, 0.45) 24px
+      );
+    }
+
+    /* Focus Mode Themes */
+    .focus-theme-parchment { background-color: #f6f1e7; color: #292524; }
+    .focus-theme-light { background-color: #ffffff; color: #18181b; }
+    .focus-theme-sepia { background-color: #efe4ce; color: #3b2f26; }
+    .focus-theme-dusk { background-color: #1e242b; color: #e2e8f0; }
+    .focus-theme-oled { background-color: #09090b; color: #d4d4d8; }
+
+    /* Contenteditable placeholder */
+    [contenteditable="true"]:empty:before {
+      content: attr(data-placeholder);
+      color: #a8a29e;
+      pointer-events: none;
+      display: block;
+    }
+
+    /* Paragraph dimming in Focus Mode when enabled */
+    .paragraph-dimming-active p,
+    .paragraph-dimming-active div,
+    .paragraph-dimming-active blockquote {
+      opacity: 0.35;
+      transition: opacity 0.2s ease;
+    }
+    .paragraph-dimming-active p.active-para,
+    .paragraph-dimming-active div.active-para,
+    .paragraph-dimming-active blockquote.active-para,
+    .paragraph-dimming-active:focus-within p:hover,
+    .paragraph-dimming-active:focus-within div:hover {
+      opacity: 1 !important;
+    }
+
+    /* Palimpsest Radial Paper Strip Aesthetics (inspired by vintage book-strip mosaic) */
+    .palimpsest-paper-bg {
+      background-color: #f5efe2;
+      background-image:
+        repeating-linear-gradient(112deg, rgba(168, 134, 88, 0.055) 0px, rgba(168, 134, 88, 0.055) 18px, transparent 18px, transparent 36px),
+        repeating-linear-gradient(68deg, rgba(120, 88, 50, 0.035) 0px, rgba(120, 88, 50, 0.035) 22px, transparent 22px, transparent 44px),
+        radial-gradient(circle at 50% 0%, rgba(217, 179, 124, 0.18), transparent 70%);
+    }
+    .dark .palimpsest-paper-bg {
+      background-color: #171412;
+      background-image:
+        repeating-linear-gradient(112deg, rgba(255, 235, 200, 0.02) 0px, rgba(255, 235, 200, 0.02) 18px, transparent 18px, transparent 36px),
+        radial-gradient(circle at 50% 0%, rgba(180, 130, 70, 0.08), transparent 70%);
+    }
+    .deckled-sheet {
+      box-shadow: 0 4px 20px -2px rgba(60, 42, 24, 0.10), 0 0 0 1px rgba(168, 140, 105, 0.22);
+    }
+    .dark .deckled-sheet {
+      box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(120, 100, 80, 0.18);
+    }
+  </style>
+</head>
+<body class="h-full bg-stone-100 text-stone-900 dark:bg-stone-950 dark:text-stone-100 overflow-hidden select-none">
+
+  <!-- MAIN APPLICATION SHELL -->
+  <div id="appRoot" class="relative flex flex-col h-full w-full overflow-hidden">
+
+    <!-- TOP APP BAR -->
+    <header id="topHeader" class="flex items-center justify-between px-3 py-2 bg-stone-900 text-stone-100 border-b border-stone-800 shrink-0 z-20">
+      <div class="flex items-center gap-2 min-w-0">
+        <img id="headerBrandIcon" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Scrivener Mobile" class="w-7 h-7 rounded-lg shadow-sm border border-amber-500/40 shrink-0" />
+        <button id="btnToggleBinder" type="button" class="p-2 rounded-lg bg-stone-800 hover:bg-stone-700 active:scale-95 transition flex items-center gap-1.5 text-amber-400" title="Toggle Binder Sidebar">
+          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h10"></path></svg>
+          <span class="text-xs font-semibold tracking-wide uppercase hidden sm:inline">Binder</span>
+        </button>
+
+        <div class="flex flex-col min-w-0">
+          <div class="flex items-center gap-1.5">
+            <button id="btnProjectSwitcher" type="button" class="text-xs font-medium text-stone-400 hover:text-amber-300 truncate max-w-[130px] sm:max-w-[200px] flex items-center gap-1" title="Switch Projects &amp; Desktop Sync">
+              <span id="currentProjectTitle">Sacred Valley Memoir (2013–2020)</span>
+              <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+            <span id="saveIndicator" class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60 font-medium">Saved</span>
+          </div>
+          <div class="flex items-center gap-1.5 min-w-0">
+            <span id="headerActiveItemBadge" class="w-2.5 h-2.5 rounded-full shrink-0 bg-amber-500"></span>
+            <h1 id="headerActiveItemTitle" class="text-sm font-semibold truncate text-stone-100">First Morning Above 11,000 Feet</h1>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW MODE SWITCHER (Editor / Corkboard / Outliner / Scrivenings) -->
+      <div class="flex items-center bg-stone-800 p-0.5 rounded-lg border border-stone-700">
+        <button id="viewBtnEditor" type="button" class="px-2.5 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-1 bg-amber-600 text-white" title="Single Document Editor">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+          <span class="hidden md:inline">Editor</span>
+        </button>
+        <button id="viewBtnScrivenings" type="button" class="px-2.5 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-1 text-stone-300 hover:text-white" title="Scrivenings (Composite Folder View)">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+          <span class="hidden md:inline">Scrivenings</span>
+        </button>
+        <button id="viewBtnCorkboard" type="button" class="px-2.5 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-1 text-stone-300 hover:text-white" title="Corkboard Index Cards">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"></path></svg>
+          <span class="hidden md:inline">Corkboard</span>
+        </button>
+        <button id="viewBtnOutliner" type="button" class="px-2.5 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-1 text-stone-300 hover:text-white" title="Outliner View">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+          <span class="hidden md:inline">Outliner</span>
+        </button>
+      </div>
+
+      <!-- RIGHT ACTIONS: Desktop Sync Bridge, Focus Mode, Compile, Dark Mode, Inspector -->
+      <div class="flex items-center gap-1.5">
+        <button id="btnOpenDesktopSync" type="button" class="px-2.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition" title="Desktop Scrivener ↔ Android Sync Hub">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+          <span id="syncStatusLabel" class="hidden sm:inline">Desktop Sync</span>
+        </button>
+
+        <button id="btnEnterFocus" type="button" class="px-2.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-stone-950 font-semibold text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition" title="Enter Distraction-Free Composition Mode">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"></path></svg>
+          <span class="hidden sm:inline">Focus</span>
+        </button>
+
+        <button id="btnOpenCompile" type="button" class="p-2 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-200 transition" title="Compile &amp; Export Manuscript">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+        </button>
+
+        <button id="btnToggleTheme" type="button" class="p-2 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-200 transition" title="Toggle Dark/Light Workspace">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        </button>
+
+        <button id="btnToggleInspector" type="button" class="p-2 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-200 transition flex items-center gap-1" title="Toggle Inspector Panel">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- MAIN WORKSPACE BODY -->
+    <div class="relative flex-1 flex overflow-hidden">
+
+      <!-- MOBILE BACKDROP OVERLAY FOR DRAWERS -->
+      <div id="mobileDrawerBackdrop" class="fixed inset-0 bg-black/50 z-30 hidden lg:hidden transition-opacity"></div>
+
+      <!-- LEFT SIDEBAR: THE BINDER -->
+      <aside id="binderSidebar" class="fixed lg:static inset-y-0 left-0 z-40 w-80 max-w-[86vw] bg-stone-900 text-stone-200 border-r border-stone-800 flex flex-col transition-transform duration-200 ease-out -translate-x-full lg:translate-x-0 shrink-0">
+        <!-- Binder Top Header & Quick Actions -->
+        <div class="p-3 border-b border-stone-800 flex items-center justify-between bg-stone-900/90">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-amber-400">Binder</span>
+            <span id="binderItemCount" class="text-[11px] px-1.5 py-0.5 rounded bg-stone-800 text-stone-400">4 scenes</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <button id="btnNewScene" type="button" class="px-2 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white text-xs font-medium flex items-center gap-1 transition" title="Add New Scene">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
+              <span>Scene</span>
+            </button>
+            <button id="btnNewFolder" type="button" class="px-2 py-1 rounded bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-medium flex items-center gap-1 border border-stone-700 transition" title="Add New Folder / Chapter">
+              <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+              <span>Folder</span>
+            </button>
+            <button id="btnCloseBinderMobile" type="button" class="p-1 rounded text-stone-400 hover:text-white lg:hidden" title="Close Binder">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Search & Filter Bar inside Binder -->
+        <div class="p-2.5 border-b border-stone-800 bg-stone-900/50 space-y-2">
+          <div class="relative">
+            <svg class="w-4 h-4 text-stone-500 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <input id="binderSearchInput" type="text" placeholder="Search scenes, synopses, prose..." class="w-full bg-stone-800/90 text-stone-100 placeholder-stone-500 text-xs rounded-lg pl-8 pr-7 py-2 border border-stone-700/80 focus:outline-none focus:border-amber-500">
+            <button id="btnClearBinderSearch" type="button" class="hidden absolute right-2 top-2 text-stone-400 hover:text-white">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+          </div>
+
+          <!-- Touch Reorder Bar for Selected Item -->
+          <div class="flex items-center justify-between bg-stone-800/80 rounded-lg px-2 py-1 border border-stone-700/70">
+            <span class="text-[11px] text-stone-400 font-medium">Reorder Selected:</span>
+            <div class="flex items-center gap-1">
+              <button id="btnMoveUp" type="button" class="p-1.5 rounded hover:bg-stone-700 text-stone-300 hover:text-amber-400 active:scale-90 transition" title="Move Scene/Folder Up">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"></path></svg>
+              </button>
+              <button id="btnMoveDown" type="button" class="p-1.5 rounded hover:bg-stone-700 text-stone-300 hover:text-amber-400 active:scale-90 transition" title="Move Scene/Folder Down">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path></svg>
+              </button>
+              <button id="btnIndentItem" type="button" class="p-1.5 rounded hover:bg-stone-700 text-stone-300 hover:text-amber-400 active:scale-90 transition" title="Move Inside Previous Folder">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 12h14"></path></svg>
+              </button>
+              <button id="btnOutdentItem" type="button" class="p-1.5 rounded hover:bg-stone-700 text-stone-300 hover:text-amber-400 active:scale-90 transition" title="Move Out to Root Level">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 19l-7-7 7-7m8 7H4"></path></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- BINDER TREE LIST -->
+        <div id="binderTreeContainer" class="flex-1 overflow-y-auto p-2 space-y-0.5 select-none"><div class="group flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg cursor-pointer transition text-xs  hover:bg-stone-800/80 text-stone-300 border border-transparent"><div class="flex items-center gap-2 min-w-0 flex-1"><button type="button" class="p-0.5 rounded hover:bg-stone-700 text-amber-400 shrink-0"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path></svg></button><span class="text-amber-400 shrink-0"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path></svg></span><span class="truncate">Part I: Arrival in the Andes</span></div><div class="flex items-center gap-1 shrink-0"><span class="text-[10px] px-1.5 py-0.5 rounded bg-stone-800 text-stone-400 font-mono">156</span></div></div><div class="group flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg cursor-pointer transition text-xs ml-5 bg-amber-500/20 text-amber-300 border border-amber-500/40 font-semibold"><div class="flex items-center gap-2 min-w-0 flex-1"><span class="w-2 h-2 rounded-full shrink-0 bg-amber-500"></span><span class="text-stone-400 shrink-0"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></span><span class="truncate">First Morning Above 11,000 Feet</span></div><div class="flex items-center gap-1 shrink-0"><span class="text-[10px] px-1.5 py-0.5 rounded bg-stone-800 text-stone-400 font-mono">88</span></div></div><div class="group flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg cursor-pointer transition text-xs ml-5 hover:bg-stone-800/80 text-stone-300 border border-transparent"><div class="flex items-center gap-2 min-w-0 flex-1"><span class="w-2 h-2 rounded-full shrink-0 bg-emerald-500"></span><span class="text-stone-400 shrink-0"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></span><span class="truncate">Footpaths of the Sacred Valley</span></div><div class="flex items-center gap-1 shrink-0"><span class="text-[10px] px-1.5 py-0.5 rounded bg-stone-800 text-stone-400 font-mono">68</span></div></div><div class="group flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg cursor-pointer transition text-xs  hover:bg-stone-800/80 text-stone-300 border border-transparent"><div class="flex items-center gap-2 min-w-0 flex-1"><button type="button" class="p-0.5 rounded hover:bg-stone-700 text-amber-400 shrink-0"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path></svg></button><span class="text-amber-400 shrink-0"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path></svg></span><span class="truncate">Part II: Ayni &amp; Reciprocity</span></div><div class="flex items-center gap-1 shrink-0"><span class="text-[10px] px-1.5 py-0.5 rounded bg-stone-800 text-stone-400 font-mono">63</span></div></div><div class="group flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg cursor-pointer transition text-xs ml-5 hover:bg-stone-800/80 text-stone-300 border border-transparent"><div class="flex items-center gap-2 min-w-0 flex-1"><span class="w-2 h-2 rounded-full shrink-0 bg-purple-500"></span><span class="text-stone-400 shrink-0"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></span><span class="truncate">Tuning the Charango in F Major</span></div><div class="flex items-center gap-1 shrink-0"><span class="text-[10px] px-1.5 py-0.5 rounded bg-stone-800 text-stone-400 font-mono">63</span></div></div><div class="group flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg cursor-pointer transition text-xs  hover:bg-stone-800/80 text-stone-300 border border-transparent"><div class="flex items-center gap-2 min-w-0 flex-1"><button type="button" class="p-0.5 rounded hover:bg-stone-700 text-amber-400 shrink-0"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg></button><span class="text-amber-400 shrink-0"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path></svg></span><span class="truncate">Research &amp; Field Notes</span></div><div class="flex items-center gap-1 shrink-0"><span class="text-[10px] px-1.5 py-0.5 rounded bg-stone-800 text-stone-400 font-mono">35</span></div></div></div>
+
+        <!-- BINDER FOOTER: Manuscript Target Progress -->
+        <div class="p-3 bg-stone-950/80 border-t border-stone-800 space-y-1.5">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-stone-400 font-medium">Manuscript Target</span>
+            <button id="btnEditProjectTarget" type="button" class="text-amber-400 hover:underline font-semibold"><span id="binderTotalWordsReadout">254 / 25,000 words (1%)</span></button>
+          </div>
+          <div class="w-full h-2 bg-stone-800 rounded-full overflow-hidden">
+            <div id="projectProgressBar" class="h-full bg-amber-500 transition-all duration-300" style="width: 1%;"></div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- CENTER STAGE: EDITOR / CORKBOARD / OUTLINER -->
+      <main class="flex-1 flex flex-col min-w-0 bg-stone-50 dark:bg-stone-900 overflow-hidden">
+
+        <!-- FORMAT & SCENE TOOLBAR (Shown in Editor & Scrivenings modes) -->
+        <div id="editorToolbar" class="px-3 py-1.5 bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between gap-2 overflow-x-auto shrink-0">
+          <div class="flex items-center gap-1 shrink-0">
+            <button type="button" data-cmd="bold" class="fmt-btn p-1.5 rounded hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-200 font-bold text-xs w-7 h-7 flex items-center justify-center" title="Bold (Ctrl+B)">B</button>
+            <button type="button" data-cmd="italic" class="fmt-btn p-1.5 rounded hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-200 italic font-serif text-xs w-7 h-7 flex items-center justify-center" title="Italic (Ctrl+I)">I</button>
+            <button type="button" data-cmd="underline" class="fmt-btn p-1.5 rounded hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-200 underline text-xs w-7 h-7 flex items-center justify-center" title="Underline (Ctrl+U)">U</button>
+            <button type="button" data-cmd="strikeThrough" class="fmt-btn p-1.5 rounded hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-200 line-through text-xs w-7 h-7 flex items-center justify-center" title="Strikethrough">S</button>
+            <span class="h-4 w-px bg-stone-200 dark:bg-stone-700 mx-1"></span>
+            <button type="button" id="btnFormatH2" class="p-1.5 rounded hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-200 text-xs font-semibold" title="Subheading">H2</button>
+            <button type="button" id="btnFormatQuote" class="p-1.5 rounded hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-200 text-xs font-medium" title="Blockquote">“ ”</button>
+            <button type="button" id="btnInsertSceneBreak" class="px-2 py-1 rounded hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-200 text-xs font-mono" title="Insert Centered Scene Break (# # #)"># # #</button>
+          </div>
+
+          <div class="flex items-center gap-2 shrink-0">
+            <select id="selectEditorFont" class="bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-200 text-xs rounded px-2 py-1 border border-stone-200 dark:border-stone-700 focus:outline-none">
+              <option value="serif">Literata Serif</option>
+              <option value="sans">Inter Sans</option>
+              <option value="mono">Courier Prime</option>
+            </select>
+
+            <div class="flex items-center bg-stone-100 dark:bg-stone-800 rounded border border-stone-200 dark:border-stone-700">
+              <button id="btnFontDecrease" type="button" class="px-2 py-0.5 text-xs hover:bg-stone-200 dark:hover:bg-stone-700" title="Smaller Text">A-</button>
+              <span id="fontSizeLabel" class="text-[11px] px-1.5 text-stone-500 dark:text-stone-400">18px</span>
+              <button id="btnFontIncrease" type="button" class="px-2 py-0.5 text-xs hover:bg-stone-200 dark:hover:bg-stone-700" title="Larger Text">A+</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW 1: SINGLE SCENE EDITOR -->
+        <div id="viewContainerEditor" class="flex-1 overflow-y-auto px-4 sm:px-8 md:px-14 py-6 palimpsest-paper-bg">
+          <div class="max-w-3xl mx-auto bg-[#faf6ee] dark:bg-stone-950 rounded-xl deckled-sheet p-5 sm:p-10 min-h-[75vh] flex flex-col">
+            <!-- Breadcrumb & Quick Reorder Pills -->
+            <div class="flex flex-wrap items-center justify-between gap-2 pb-3 mb-4 border-b border-stone-100 dark:border-stone-800/80">
+              <div class="flex items-center gap-2 text-xs text-stone-500 dark:text-stone-400">
+                <span id="editorFolderBreadcrumb" class="font-medium">Part I: Arrival in the Andes</span>
+                <span>›</span>
+                <span id="editorStatusPill" class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-100 text-amber-900 dark:bg-amber-950/80 dark:text-amber-300">Revised Draft</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <button id="btnPrevScene" type="button" class="px-2 py-1 rounded text-xs bg-stone-100 dark:bg-stone-900 hover:bg-stone-200 dark:hover:bg-stone-800 text-stone-600 dark:text-stone-300 flex items-center gap-1" title="Previous Scene">
+                  <span>← Prev</span>
+                </button>
+                <button id="btnNextScene" type="button" class="px-2 py-1 rounded text-xs bg-stone-100 dark:bg-stone-900 hover:bg-stone-200 dark:hover:bg-stone-800 text-stone-600 dark:text-stone-300 flex items-center gap-1" title="Next Scene">
+                  <span>Next →</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Editable Scene Title -->
+            <input id="editorTitleInput" type="text" placeholder="Scene or Chapter Title..." class="w-full text-2xl sm:text-3xl font-bold bg-transparent text-stone-900 dark:text-stone-100 focus:outline-none mb-2 select-text">
+
+            <!-- Quick Inline Synopsis Bar -->
+            <input id="editorInlineSynopsis" type="text" placeholder="Add a brief index card synopsis for this scene..." class="w-full text-xs sm:text-sm italic bg-transparent text-stone-500 dark:text-stone-400 focus:outline-none mb-6 pb-3 border-b border-dashed border-stone-200 dark:border-stone-800 select-text">
+
+            <!-- Rich Text Prose Area -->
+            <div id="editorBody" contenteditable="true" data-placeholder="Begin writing your scene here..." class="flex-1 w-full focus:outline-none leading-relaxed text-stone-800 dark:text-stone-200 space-y-4 select-text editor-font-serif" style="font-size: 18px; line-height: 1.8;"><p>The morning air in Cusco carried the sharp, resinous scent of burning eucalyptus leaves and damp adobe. At eleven thousand feet, even climbing the narrow stone steps toward San Blas demanded a deliberate rhythm—two short inhales through the nose, one slow release.</p><p>In my rucksack sat two blank pocket notebooks and the lingering habits of graduate workshops where every sentence was weighed for cleverness. Out here, looking across terracotta rooftops toward Ausangate on the horizon, cleverness felt beside the point. The mountains asked for a quieter kind of attention.</p></div>
+          </div>
+        </div>
+
+        <!-- VIEW 2: SCRIVENINGS (COMPOSITE CONTINUOUS MANUSCRIPT VIEW) -->
+        <div id="viewContainerScrivenings" class="hidden flex-1 overflow-y-auto px-4 sm:px-8 md:px-14 py-6">
+          <div class="max-w-3xl mx-auto space-y-6">
+            <div class="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl p-3.5 flex items-center justify-between">
+              <div>
+                <h2 id="scriveningsHeaderTitle" class="text-sm font-bold text-amber-900 dark:text-amber-300">Scrivenings Mode — Composite View</h2>
+                <p class="text-xs text-amber-700 dark:text-amber-400/80">Edit multiple scenes in a continuous flow. Changes sync immediately to each scene in the Binder.</p>
+              </div>
+              <span id="scriveningsTotalWordsBadge" class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-amber-200/70 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200">0 words</span>
+            </div>
+            <div id="scriveningsList" class="bg-white dark:bg-stone-950 rounded-xl shadow-sm border border-stone-200 dark:border-stone-800 p-5 sm:p-10 divide-y-2 divide-dashed divide-stone-300 dark:divide-stone-800">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW 3: CORKBOARD VIEW (INDEX CARDS) -->
+        <div id="viewContainerCorkboard" class="hidden flex-1 overflow-y-auto corkboard-bg p-4 sm:p-6">
+          <div class="max-w-6xl mx-auto">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-4 bg-stone-900/85 text-stone-100 backdrop-blur px-4 py-2.5 rounded-xl shadow">
+              <div>
+                <h2 id="corkboardHeaderTitle" class="text-sm font-bold text-amber-400">Corkboard Index Cards</h2>
+                <p class="text-xs text-stone-300">Tap any card to open in Editor, edit synopses directly, or use arrows to reorder scenes.</p>
+              </div>
+              <button id="btnAddSceneFromCorkboard" type="button" class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-stone-950 font-semibold text-xs flex items-center gap-1">
+                <span>+ New Index Card</span>
+              </button>
+            </div>
+
+            <div id="corkboardGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW 4: OUTLINER VIEW -->
+        <div id="viewContainerOutliner" class="hidden flex-1 overflow-y-auto p-4 sm:p-6 bg-stone-100 dark:bg-stone-900">
+          <div class="max-w-6xl mx-auto bg-white dark:bg-stone-950 rounded-xl shadow-sm border border-stone-200 dark:border-stone-800 overflow-hidden">
+            <div class="p-4 border-b border-stone-200 dark:border-stone-800 flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h2 class="text-sm font-bold text-stone-900 dark:text-stone-100">Project Outliner</h2>
+                <p class="text-xs text-stone-500 dark:text-stone-400">Track scene synopses, status stamps, labels, word progress, and order across your manuscript.</p>
+              </div>
+              <button id="btnAddSceneFromOutliner" type="button" class="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs">
+                + Add Scene
+              </button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-stone-50 dark:bg-stone-900/80 text-[11px] font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400 border-b border-stone-200 dark:border-stone-800">
+                    <th class="py-2.5 px-3">Title &amp; Synopsis</th>
+                    <th class="py-2.5 px-3">Label</th>
+                    <th class="py-2.5 px-3">Status</th>
+                    <th class="py-2.5 px-3">Words / Target</th>
+                    <th class="py-2.5 px-3 text-right">Reorder</th>
+                  </tr>
+                </thead>
+                <tbody id="outlinerTableBody" class="divide-y divide-stone-200 dark:divide-stone-800 text-xs">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- BOTTOM STATUS & PROGRESS BAR -->
+        <footer class="px-3 py-2 bg-white dark:bg-stone-950 border-t border-stone-200 dark:border-stone-800 flex flex-wrap items-center justify-between gap-2 text-xs text-stone-600 dark:text-stone-400 shrink-0">
+          <div class="flex items-center gap-3">
+            <span id="sceneWordCountReadout" class="font-semibold text-stone-900 dark:text-stone-100">88 words</span>
+            <span class="hidden sm:inline text-stone-300 dark:text-stone-700">|</span>
+            <span id="sceneCharCountReadout" class="hidden sm:inline">570 chars</span>
+            <span class="hidden md:inline text-stone-300 dark:text-stone-700">|</span>
+            <span id="sceneReadTimeReadout" class="hidden md:inline">~1 min read</span>
+          </div>
+
+          <!-- Scene Target Progress -->
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] text-stone-500">Scene Goal:</span>
+            <div class="w-24 sm:w-32 h-2 bg-stone-200 dark:bg-stone-800 rounded-full overflow-hidden">
+              <div id="sceneTargetBar" class="h-full bg-emerald-500 transition-all duration-300" style="width: 11%;"></div>
+            </div>
+            <span id="sceneTargetText" class="text-[11px] font-medium">88 / 800</span>
+          </div>
+        </footer>
+      </main>
+
+      <!-- RIGHT SIDEBAR: THE INSPECTOR (Synopsis, Notes, Label/Status, Snapshots) -->
+      <aside id="inspectorSidebar" class="fixed xl:static inset-y-0 right-0 z-40 w-80 max-w-[88vw] bg-white dark:bg-stone-900 border-l border-stone-200 dark:border-stone-800 flex flex-col transition-transform duration-200 ease-out translate-x-full xl:translate-x-0 shrink-0">
+        <!-- Inspector Header & Tabs -->
+        <div class="p-2.5 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between bg-stone-50 dark:bg-stone-950">
+          <div class="flex items-center gap-1 bg-stone-200/70 dark:bg-stone-800 p-0.5 rounded-lg">
+            <button id="inspTabNotes" type="button" class="px-2.5 py-1 rounded-md text-xs font-semibold bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 shadow-sm">Synopsis &amp; Notes</button>
+            <button id="inspTabSnapshots" type="button" class="px-2.5 py-1 rounded-md text-xs font-semibold text-stone-600 dark:text-stone-400">Snapshots</button>
+          </div>
+          <button id="btnCloseInspectorMobile" type="button" class="p-1 rounded text-stone-400 hover:text-stone-700 dark:hover:text-white xl:hidden" title="Close Inspector">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
+        </div>
+
+        <!-- Inspector Tab 1: Synopsis, Metadata & Scene Notes -->
+        <div id="inspectorPanelNotes" class="flex-1 overflow-y-auto p-3.5 space-y-4">
+          <!-- Index Card Synopsis -->
+          <div>
+            <label for="inspectorSynopsis" class="block text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-1.5">Index Card Synopsis</label>
+            <textarea id="inspectorSynopsis" rows="4" placeholder="Summarize key beats or conflict in this scene..." class="w-full rounded-lg border border-stone-300 dark:border-stone-700 bg-amber-50/40 dark:bg-stone-950 p-2.5 text-xs text-stone-800 dark:text-stone-200 focus:outline-none focus:border-amber-500 select-text"></textarea>
+          </div>
+
+          <!-- Metadata: Label & Status -->
+          <div class="grid grid-cols-2 gap-2.5">
+            <div>
+              <label for="inspectorLabelSelect" class="block text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-1">Color Label</label>
+              <select id="inspectorLabelSelect" class="w-full rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-950 px-2 py-1.5 text-xs text-stone-800 dark:text-stone-200">
+                <option value="amber">Key Scene (Gold)</option>
+                <option value="sky">Narrative / Situation (Blue)</option>
+                <option value="emerald">Character Arc (Green)</option>
+                <option value="rose">High Tension (Crimson)</option>
+                <option value="purple">Memory / Flashback (Violet)</option>
+                <option value="stone">Research / Note (Slate)</option>
+              </select>
+            </div>
+            <div>
+              <label for="inspectorStatusSelect" class="block text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-1">Draft Status</label>
+              <select id="inspectorStatusSelect" class="w-full rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-950 px-2 py-1.5 text-xs text-stone-800 dark:text-stone-200">
+                <option value="To Do">To Do</option>
+                <option value="First Draft">First Draft</option>
+                <option value="Revised Draft">Revised Draft</option>
+                <option value="Final Draft">Final Draft</option>
+                <option value="Done">Done</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Scene Word Count Target -->
+          <div>
+            <label for="inspectorTargetInput" class="block text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-1">Scene Word Goal</label>
+            <input id="inspectorTargetInput" type="number" min="50" step="50" class="w-full rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-950 px-2.5 py-1.5 text-xs text-stone-800 dark:text-stone-200 select-text">
+          </div>
+
+          <!-- Document Scratchpad Notes -->
+          <div class="flex-1 flex flex-col">
+            <label for="inspectorNotes" class="block text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-1.5">Scene Notes &amp; Research</label>
+            <textarea id="inspectorNotes" rows="7" placeholder="Jot down sensory details, dialogue fragments, or revision reminders..." class="w-full rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-950 p-2.5 text-xs text-stone-800 dark:text-stone-200 focus:outline-none focus:border-amber-500 select-text"></textarea>
+          </div>
+
+          <!-- Scene Actions: Duplicate & Delete -->
+          <div class="pt-2 border-t border-stone-200 dark:border-stone-800 flex items-center justify-between gap-2">
+            <button id="btnDuplicateScene" type="button" class="flex-1 py-1.5 px-2.5 rounded-lg border border-stone-300 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-800 text-xs font-medium text-stone-700 dark:text-stone-300">Duplicate Scene</button>
+            <button id="btnTrashScene" type="button" class="py-1.5 px-2.5 rounded-lg border border-rose-300 dark:border-rose-900/60 hover:bg-rose-50 dark:hover:bg-rose-950/50 text-xs font-medium text-rose-600 dark:text-rose-400">Delete</button>
+          </div>
+        </div>
+
+        <!-- Inspector Tab 2: Snapshots (Version History per Scene) -->
+        <div id="inspectorPanelSnapshots" class="hidden flex-1 overflow-y-auto p-3.5 space-y-3">
+          <div class="bg-stone-100 dark:bg-stone-950 p-3 rounded-lg border border-stone-200 dark:border-stone-800 space-y-2">
+            <p class="text-xs text-stone-600 dark:text-stone-400">Save a point-in-time snapshot of this scene before cutting or rewriting.</p>
+            <button id="btnTakeSnapshot" type="button" class="w-full py-2 px-3 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-sm">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+              <span>Take Snapshot Now</span>
+            </button>
+          </div>
+          <div id="snapshotsListContainer" class="space-y-2"><div class="p-2.5 rounded-lg border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 space-y-1.5 text-xs"><div class="flex items-center justify-between font-semibold text-stone-700 dark:text-stone-300"><span>2026-11-10 08:30</span><span class="font-mono text-[11px] text-amber-600">84 words</span></div><p class="text-stone-500 dark:text-stone-400 line-clamp-2 italic text-[11px]">The morning air in Cusco carried the sharp scent of burning eucalyptus leaves. At eleven thousand feet, climbing the stone steps toward San Blas demanded a deliberate rhythm.</p><div class="flex items-center justify-end gap-2 pt-1"><button type="button" class="px-2 py-1 rounded bg-amber-600/15 text-amber-700 dark:text-amber-300 hover:bg-amber-600 hover:text-white font-medium text-[11px] transition">Restore Version</button></div></div></div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- DISTRACTION-FREE DESKTOP-STYLE COMPOSITION / FOCUS MODE OVERLAY -->
+    <div id="focusModeOverlay" class="hidden fixed inset-0 z-50 flex flex-col focus-theme-parchment transition-colors duration-300">
+      <!-- Tiny Whisper-Quiet Corner Button (Only thing visible in pure Focus Mode) -->
+      <div class="fixed top-3 right-3 z-50 flex items-center gap-1.5">
+        <button id="btnQuickExitFocusPill" type="button" class="w-8 h-8 rounded-full flex items-center justify-center bg-black/10 dark:bg-white/10 opacity-30 hover:opacity-95 active:opacity-100 transition-opacity backdrop-blur-sm" title="Focus Controls &amp; Exit">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"></path></svg>
+        </button>
+      </div>
+
+      <!-- Hidden-by-Default Slide-Down Focus Menu Sheet (Appears ONLY when corner icon is tapped) -->
+      <div id="focusHudDrawer" class="hidden fixed top-12 right-3 left-3 sm:left-auto sm:w-80 z-50 rounded-2xl bg-stone-900/95 text-stone-100 border border-stone-700/80 shadow-2xl backdrop-blur-md p-4 space-y-3.5">
+        <div class="flex items-center justify-between gap-2 border-b border-stone-800 pb-2.5">
+          <div class="min-w-0">
+            <span class="block text-[10px] font-bold uppercase tracking-widest text-amber-400">Focus Mode</span>
+            <span id="focusSceneTitle" class="block text-xs font-semibold truncate text-stone-200">First Morning Above 11,000 Feet</span>
+          </div>
+          <button id="btnExitFocus" type="button" class="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 text-xs font-bold shadow shrink-0 flex items-center gap-1">
+            Exit Focus
+          </button>
+        </div>
+
+        <!-- Theme & Reading Aids (Clean Stacked Grid, Zero Overlap) -->
+        <div class="space-y-2 text-xs">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-stone-400">Paper Theme</span>
+            <select id="selectFocusTheme" class="rounded-lg px-2.5 py-1.5 bg-stone-800 text-stone-100 border border-stone-700 focus:outline-none text-xs">
+              <option value="parchment">Warm Parchment</option>
+              <option value="sepia">Andean Sepia</option>
+              <option value="light">Crisp Paper</option>
+              <option value="dusk">Midnight Slate</option>
+              <option value="oled">OLED Pitch Black</option>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <button id="btnToggleTypewriter" type="button" class="px-2.5 py-1.5 rounded-lg text-xs font-medium border border-stone-700 bg-stone-800 hover:bg-stone-700 text-stone-200 transition text-center">
+              Typewriter: OFF
+            </button>
+            <button id="btnToggleParaDim" type="button" class="px-2.5 py-1.5 rounded-lg text-xs font-medium border border-stone-700 bg-stone-800 hover:bg-stone-700 text-stone-200 transition text-center">
+              Focus Para: OFF
+            </button>
+          </div>
+        </div>
+
+        <!-- Session Stats & Sprint Timer (Hidden away inside menu until tapped) -->
+        <div class="pt-2.5 border-t border-stone-800 flex items-center justify-between gap-2 text-[11px] text-stone-300">
+          <div>
+            <span id="focusWordCount" class="block font-medium">88 words in scene</span>
+            <span id="focusSessionDelta" class="text-amber-400 font-semibold">+0 session words</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <button id="btnFocusPomodoro" type="button" class="px-2.5 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 border border-stone-700 font-mono text-xs text-stone-100">
+              ⏱ 25:00 Start Sprint
+            </button>
+            <button id="btnFocusResetSprint" type="button" class="px-2 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 border border-stone-700 text-xs text-stone-300" title="Reset Timer">↺</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pure Distraction-Free Writing Canvas (Nothing else on screen) -->
+      <div id="focusScrollContainer" class="flex-1 overflow-y-auto px-6 sm:px-14 py-10 sm:py-16">
+        <div id="focusPaperContainer" class="max-w-2xl mx-auto min-h-[82vh] flex flex-col">
+          <input id="focusTitleInput" type="text" class="w-full text-xl sm:text-3xl font-bold bg-transparent focus:outline-none mb-5 editor-font-serif select-text pr-8" placeholder="Scene Title...">
+          <div id="focusEditorBody" contenteditable="true" data-placeholder="Write without distractions..." class="flex-1 w-full focus:outline-none leading-loose select-text pb-28 editor-font-serif" style="font-size: 19px; line-height: 1.85;"><p class="">The morning air in Cusco carried the sharp, resinous scent of burning eucalyptus leaves and damp adobe. At eleven thousand feet, even climbing the narrow stone steps toward San Blas demanded a deliberate rhythm—two short inhales through the nose, one slow release.</p><p class="">In my rucksack sat two blank pocket notebooks and the lingering habits of graduate workshops where every sentence was weighed for cleverness. Out here, looking across terracotta rooftops toward Ausangate on the horizon, cleverness felt beside the point. The mountains asked for a quieter kind of attention.</p><p class=""><br></p><p class="active-para"><br></p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: DESKTOP SCRIVENER ↔ ANDROID SYNC BRIDGE -->
+    <div id="desktopSyncModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl max-w-2xl w-full p-5 shadow-2xl max-h-[90vh] overflow-y-auto space-y-4">
+        <div class="flex items-center justify-between border-b border-stone-200 dark:border-stone-800 pb-3">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-sky-500"></span>
+              <h3 class="text-base font-bold text-stone-900 dark:text-stone-100">Desktop Scrivener ↔ Android Sync Bridge</h3>
+            </div>
+            <p class="text-xs text-stone-500 dark:text-stone-400 mt-0.5">Two-way link with Desktop Scrivener (<code class="font-mono">File › Sync › with External Folder</code> or <code class="font-mono">.scrivx</code> Binder XML) &amp; Obsidian vaults.</p>
+          </div>
+          <button id="btnCloseDesktopSyncModal" type="button" class="p-1 text-stone-400 hover:text-stone-700 dark:hover:text-white">✕</button>
+        </div>
+
+        <!-- Option 1: Live Folder Link (File System Access API + Numbered Scrivener Sync Files) -->
+        <div class="p-4 rounded-xl bg-sky-50/70 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-800/60 space-y-3">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-sky-900 dark:text-sky-300">1. Scrivener "External Folder" Live Sync (Recommended)</h4>
+              <p class="text-xs text-stone-600 dark:text-stone-300 mt-1">
+                In Desktop Scrivener, choose <strong>File › Sync › with External Folder</strong> (set format to Plain Text <code class="font-mono">.md</code> or <code class="font-mono">.txt</code> inside Dropbox, Drive, or Syncthing). Link that folder here to pull scenes onto your phone and write back reordered, numbered files (<code class="font-mono">01 - Scene Title [ID].md</code>).
+              </p>
+            </div>
+            <span id="folderLinkBadge" class="text-[11px] px-2 py-0.5 rounded-full bg-stone-200 dark:bg-stone-800 text-stone-600 dark:text-stone-300 font-semibold shrink-0">Not Linked</span>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 pt-1">
+            <button id="btnLinkLocalFolder" type="button" class="px-3.5 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm">
+              <span>📂 Link Synced Folder (File System API)</span>
+            </button>
+            <button id="btnSyncWriteToFolder" type="button" class="px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm">
+              <span>⇄ Push Reordered Binder to Folder</span>
+            </button>
+            <label class="px-3 py-2 rounded-lg bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 hover:bg-stone-100 text-xs font-medium text-stone-700 dark:text-stone-200 cursor-pointer">
+              <span>Import Sync Folder Files (.md / .txt)</span>
+              <input id="inputBatchSyncFiles" type="file" multiple="" accept=".md,.txt,.scrivx,.json" class="hidden">
+            </label>
+          </div>
+
+          <div class="flex items-center gap-2 pt-1">
+            <input id="chkIncludeYamlFrontmatter" type="checkbox" checked="" class="rounded border-stone-300 text-sky-600 focus:ring-sky-500">
+            <label for="chkIncludeYamlFrontmatter" class="text-xs text-stone-600 dark:text-stone-400">Include YAML Frontmatter (<code class="font-mono">synopsis</code>, <code class="font-mono">status</code>, <code class="font-mono">label</code>, <code class="font-mono">binder_order</code>) for Obsidian &amp; Desktop metadata sync</label>
+          </div>
+        </div>
+
+        <!-- Option 2: Direct Desktop .scrivx XML Binder Structure Import & Export -->
+        <div class="p-4 rounded-xl bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 space-y-2.5">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">2. Direct Desktop <code class="font-mono">.scrivx</code> XML Binder Import &amp; Export</h4>
+          <p class="text-xs text-stone-600 dark:text-stone-400">
+            Open your desktop <code class="font-mono">Project.scriv/Project.scrivx</code> XML file to import your exact desktop Binder tree (Folders, Scenes, UUIDs, Labels, and Statuses), or export an updated <code class="font-mono">.scrivx</code> file after reordering scenes on Android.
+          </p>
+          <div class="flex flex-wrap items-center gap-2 pt-1">
+            <label class="px-3.5 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold cursor-pointer">
+              <span>Import Desktop .scrivx XML</span>
+              <input id="inputScrivxFile" type="file" accept=".scrivx,.xml" class="hidden">
+            </label>
+            <button id="btnExportScrivxXml" type="button" class="px-3.5 py-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 hover:bg-stone-50 dark:hover:bg-stone-800 text-xs font-semibold text-stone-800 dark:text-stone-200">
+              Export Updated .scrivx Binder XML
+            </button>
+          </div>
+        </div>
+
+        <!-- Option 3: Android Home Screen PWA Install Guide -->
+        <div class="p-3.5 rounded-xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200 dark:border-stone-800 text-xs space-y-1">
+          <div class="font-bold text-stone-800 dark:text-stone-200">📱 Install on Your Android Phone Home Screen</div>
+          <p class="text-stone-500 dark:text-stone-400">
+            Open this HTML file in <strong>Chrome on Android</strong> (or host via Netlify Drop / GitHub Pages), tap the browser menu <strong>⋮ › Add to Home screen</strong>, and launch <strong>Scrivener Mobile</strong> full-screen offline with instant local auto-save.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: PROJECT SWITCHER & IMPORT/EXPORT -->
+    <div id="projectModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl max-w-lg w-full p-5 shadow-2xl space-y-4">
+        <div class="flex items-center justify-between border-b border-stone-200 dark:border-stone-800 pb-3">
+          <h3 class="text-base font-bold text-stone-900 dark:text-stone-100">Scrivener Projects &amp; Backup</h3>
+          <button id="btnCloseProjectModal" type="button" class="p-1 text-stone-400 hover:text-stone-700 dark:hover:text-white">✕</button>
+        </div>
+
+        <div class="space-y-2">
+          <label class="block text-xs font-bold uppercase tracking-wider text-stone-500">Your Projects</label>
+          <div id="projectListContainer" class="space-y-1.5 max-h-48 overflow-y-auto"></div>
+        </div>
+
+        <div class="flex gap-2 pt-2 border-t border-stone-200 dark:border-stone-800">
+          <input id="newProjectNameInput" type="text" placeholder="New project title..." class="flex-1 rounded-lg border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-950 px-3 py-2 text-xs focus:outline-none select-text">
+          <button id="btnCreateProject" type="button" class="px-3.5 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold shrink-0">+ Create Project</button>
+        </div>
+
+        <div class="pt-3 border-t border-stone-200 dark:border-stone-800 flex flex-wrap items-center justify-between gap-2">
+          <button id="btnExportJsonBackup" type="button" class="px-3 py-2 rounded-lg bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 text-xs font-medium text-stone-700 dark:text-stone-200">Download Project (.json)</button>
+          <label class="px-3 py-2 rounded-lg bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 text-xs font-medium text-stone-700 dark:text-stone-200 cursor-pointer">
+            <span>Import Project (.json / .md)</span>
+            <input id="inputImportFile" type="file" accept=".json,.md,.txt" class="hidden">
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: COMPILE MANUSCRIPT -->
+    <div id="compileModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl max-w-2xl w-full p-5 shadow-2xl flex flex-col max-h-[88vh] space-y-4">
+        <div class="flex items-center justify-between border-b border-stone-200 dark:border-stone-800 pb-3">
+          <div>
+            <h3 class="text-base font-bold text-stone-900 dark:text-stone-100">Compile Manuscript</h3>
+            <p class="text-xs text-stone-500">Stitch all Manuscript scenes into a single formatted output for export or sharing.</p>
+          </div>
+          <button id="btnCloseCompileModal" type="button" class="p-1 text-stone-400 hover:text-stone-700 dark:hover:text-white">✕</button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          <div>
+            <label class="block font-semibold mb-1 text-stone-600 dark:text-stone-300">Scene Separator</label>
+            <select id="compileSeparatorSelect" class="w-full rounded-lg border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-950 px-2.5 py-1.5">
+              <option value="hashes"># # # (Standard Manuscript)</option>
+              <option value="stars">* * * (Three Asterisks)</option>
+              <option value="line">--- (Horizontal Rule)</option>
+              <option value="space">Blank Line Only</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold mb-1 text-stone-600 dark:text-stone-300">Include Titles</label>
+            <select id="compileHeadingSelect" class="w-full rounded-lg border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-950 px-2.5 py-1.5">
+              <option value="both">Folder &amp; Scene Headings</option>
+              <option value="folders">Folder Headings Only</option>
+              <option value="none">Prose Only (No Headings)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold mb-1 text-stone-600 dark:text-stone-300">Export Format</label>
+            <select id="compileFormatSelect" class="w-full rounded-lg border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-950 px-2.5 py-1.5">
+              <option value="md">Markdown (.md)</option>
+              <option value="txt">Plain Text (.txt)</option>
+            </select>
+          </div>
+        </div>
+
+        <textarea id="compilePreviewArea" readonly="" class="flex-1 w-full rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-950 p-3.5 font-mono text-xs text-stone-800 dark:text-stone-200 focus:outline-none select-text min-h-[220px]"></textarea>
+
+        <div class="flex items-center justify-between pt-2 border-t border-stone-200 dark:border-stone-800">
+          <span id="compileSummaryStats" class="text-xs text-stone-500">0 scenes • 0 words</span>
+          <div class="flex items-center gap-2">
+            <button id="btnCopyCompiled" type="button" class="px-3.5 py-2 rounded-lg border border-stone-300 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-800 text-xs font-semibold">Copy Manuscript</button>
+            <button id="btnDownloadCompiled" type="button" class="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold">Download File</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: EDIT PROJECT TARGET OR RENAME -->
+    <div id="targetModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl max-w-sm w-full p-5 shadow-2xl space-y-4">
+        <h3 class="text-sm font-bold text-stone-900 dark:text-stone-100">Update Manuscript Word Goal</h3>
+        <div>
+          <label for="projectTargetModalInput" class="block text-xs text-stone-500 mb-1">Target Word Count</label>
+          <input id="projectTargetModalInput" type="number" min="500" step="500" class="w-full rounded-lg border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-950 px-3 py-2 text-sm select-text">
+        </div>
+        <div class="flex justify-end gap-2">
+          <button id="btnCancelTargetModal" type="button" class="px-3 py-1.5 rounded-lg text-xs text-stone-600 dark:text-stone-400">Cancel</button>
+          <button id="btnSaveTargetModal" type="button" class="px-3.5 py-1.5 rounded-lg bg-amber-600 text-white text-xs font-semibold">Save Goal</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toastBanner" class="fixed bottom-14 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-stone-900 text-amber-300 text-xs font-medium shadow-lg border border-stone-700 pointer-events-none opacity-0 transition-opacity duration-200">
+      Action completed
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const STORAGE_KEY = 'scrivener_pocket_studio_v1';
+
+      const LABEL_COLORS = {
+        amber: { dot: 'bg-amber-500', badge: 'bg-amber-100 text-amber-900 dark:bg-amber-950/80 dark:text-amber-300', border: 'border-l-amber-500', name: 'Key Scene' },
+        sky: { dot: 'bg-sky-500', badge: 'bg-sky-100 text-sky-900 dark:bg-sky-950/80 dark:text-sky-300', border: 'border-l-sky-500', name: 'Situation' },
+        emerald: { dot: 'bg-emerald-500', badge: 'bg-emerald-100 text-emerald-900 dark:bg-emerald-950/80 dark:text-emerald-300', border: 'border-l-emerald-500', name: 'Character Arc' },
+        rose: { dot: 'bg-rose-500', badge: 'bg-rose-100 text-rose-900 dark:bg-rose-950/80 dark:text-rose-300', border: 'border-l-rose-500', name: 'High Tension' },
+        purple: { dot: 'bg-purple-500', badge: 'bg-purple-100 text-purple-900 dark:bg-purple-950/80 dark:text-purple-300', border: 'border-l-purple-500', name: 'Flashback' },
+        stone: { dot: 'bg-stone-400', badge: 'bg-stone-200 text-stone-800 dark:bg-stone-800 dark:text-stone-300', border: 'border-l-stone-400', name: 'Research / Note' }
+      };
+
+      function createDefaultProjects() {
+        return [
+          {
+            id: 'proj_sacred_valley',
+            title: 'Sacred Valley Memoir (2013–2020)',
+            targetWords: 25000,
+            activeItemId: 'sc_arrival_cusco',
+            items: [
+              {
+                id: 'fld_act1',
+                type: 'folder',
+                parentId: null,
+                title: 'Part I: Arrival in the Andes',
+                synopsis: 'Leaving the MFA program behind and stepping into the thin high-altitude air of Cusco and Urubamba.',
+                notes: 'Focus on Vivian Gornick framework: Situation (moving to Peru after graduate school) vs. Story (searching for stillness and reciprocal belonging).',
+                label: 'amber',
+                status: 'Revised Draft',
+                target: 3000,
+                expanded: true,
+                inTrash: false,
+                content: '',
+                snapshots: []
+              },
+              {
+                id: 'sc_arrival_cusco',
+                type: 'scene',
+                parentId: 'fld_act1',
+                title: 'First Morning Above 11,000 Feet',
+                synopsis: 'Waking to eucalyptus smoke and cobblestone echoes in San Blas; learning to pace the breath on steep stone steps.',
+                notes: 'Include sensory details: adobe walls warming in the early sun, charango chords drifting from an open courtyard.',
+                label: 'amber',
+                status: 'Revised Draft',
+                target: 800,
+                inTrash: false,
+                content: '<p>The morning air in Cusco carried the sharp, resinous scent of burning eucalyptus leaves and damp adobe. At eleven thousand feet, even climbing the narrow stone steps toward San Blas demanded a deliberate rhythm—two short inhales through the nose, one slow release.</p><p>In my rucksack sat two blank pocket notebooks and the lingering habits of graduate workshops where every sentence was weighed for cleverness. Out here, looking across terracotta rooftops toward Ausangate on the horizon, cleverness felt beside the point. The mountains asked for a quieter kind of attention.</p>',
+                snapshots: [
+                  {
+                    id: 'snap_init_1',
+                    timestamp: '2026-11-10 08:30',
+                    wordCount: 84,
+                    content: '<p>The morning air in Cusco carried the sharp scent of burning eucalyptus leaves. At eleven thousand feet, climbing the stone steps toward San Blas demanded a deliberate rhythm.</p>'
+                  }
+                ]
+              },
+              {
+                id: 'sc_urubamba_trail',
+                type: 'scene',
+                parentId: 'fld_act1',
+                title: 'Footpaths of the Sacred Valley',
+                synopsis: 'Running the dusty singletrack above Urubamba alongside irrigation channels carved centuries ago.',
+                notes: 'Contrast the urgency of racing with the steady cadence of local farmers and llamas along the high pass.',
+                label: 'emerald',
+                status: 'First Draft',
+                target: 1000,
+                inTrash: false,
+                content: '<p>By the third month in Urubamba, my mornings began before dawn with laced trail shoes and a headlamp beam cutting through the valley mist. The footpath followed an ancient stone acequia where glacial meltwater rushed down from Chicón.</p><p>Halfway up the switchbacks, a herd of llamas stood motionless in the bunchgrass, their ears angled toward the wind. They never hurried, yet they covered the high passes with effortless economy.</p>',
+                snapshots: []
+              },
+              {
+                id: 'fld_act2',
+                type: 'folder',
+                parentId: null,
+                title: 'Part II: Ayni & Reciprocity',
+                synopsis: 'Deepening bonds in Calca and Lares; campfire music sessions and shared mountain treks.',
+                notes: 'Key theme: Listening and humility.',
+                label: 'sky',
+                status: 'First Draft',
+                target: 4000,
+                expanded: true,
+                inTrash: false,
+                content: '',
+                snapshots: []
+              },
+              {
+                id: 'sc_charango_fire',
+                type: 'scene',
+                parentId: 'fld_act2',
+                title: 'Tuning the Charango in F Major',
+                synopsis: 'An evening jam session by the fire in Calca, learning lower harmony vocals on Carnaval.',
+                notes: 'Keep the rhythm in 4/4 meter; capture the warmth of shared thermoses of muña tea.',
+                label: 'purple',
+                status: 'First Draft',
+                target: 900,
+                inTrash: false,
+                content: '<p>Around the fire ring in Calca, the double courses of the charango rang out bright and percussive against the night chill. Tuning the ten strings by ear took patience whenever the mountain temperature dropped.</p><p>When we locked into the four-four pulse of the chorus, singing the lower harmony in F major, the barrier between visitor and neighbor dissolved into the cadence of the song.</p>',
+                snapshots: []
+              },
+              {
+                id: 'fld_research',
+                type: 'folder',
+                parentId: null,
+                title: 'Research & Field Notes',
+                synopsis: 'Reference material, Quechua terms, and structural notes.',
+                notes: 'Non-manuscript reference notes.',
+                label: 'stone',
+                status: 'Done',
+                target: 500,
+                expanded: false,
+                inTrash: false,
+                content: '',
+                snapshots: []
+              },
+              {
+                id: 'sc_gornick_notes',
+                type: 'scene',
+                parentId: 'fld_research',
+                title: 'Situation vs. Story Architecture',
+                synopsis: 'Structural checklist for each chapter beat.',
+                notes: 'Reference whenever revising a scene.',
+                label: 'stone',
+                status: 'Done',
+                target: 300,
+                inTrash: false,
+                content: '<p><strong>The Situation:</strong> The external context or factual circumstances (living in the Sacred Valley for thirteen years, trail running, learning Andean instruments).</p><p><strong>The Story:</strong> The emotional experience, insight, and transformation that the narrator undergoes within that situation.</p>',
+                snapshots: []
+              }
+            ]
+          },
+          {
+            id: 'proj_following_llamas',
+            title: 'Following Llamas: Lifebook Manuscript',
+            targetWords: 20000,
+            activeItemId: 'sc_llama_awe',
+            items: [
+              {
+                id: 'fld_llamas_1',
+                type: 'folder',
+                parentId: null,
+                title: 'Pillar 1: Awe & Stillness',
+                synopsis: 'Opening wayfinding exercises on slowing down and observing the terrain.',
+                notes: '',
+                label: 'amber',
+                status: 'First Draft',
+                target: 2500,
+                expanded: true,
+                inTrash: false,
+                content: '',
+                snapshots: []
+              },
+              {
+                id: 'sc_llama_awe',
+                type: 'scene',
+                parentId: 'fld_llamas_1',
+                title: 'The Art of Pausing on the Ridge',
+                synopsis: 'Why high-altitude wayfinding starts with standing still before choosing a path.',
+                notes: 'Include a guided reflection prompt at the end of the scene.',
+                label: 'amber',
+                status: 'First Draft',
+                target: 750,
+                inTrash: false,
+                content: '<p>Watch a llama crest a fourteen-thousand-foot pass in the Vilcanota range. Before taking a single step down the opposing valley, it stops completely, neck upright, scanning the contours of rock and weather.</p><p>Wayfinding in our creative lives asks for that same unhurried pause—trading frantic motion for clear sight.</p>',
+                snapshots: []
+              }
+            ]
+          }
+        ];
+      }
+
+      let state = {
+        projects: createDefaultProjects(),
+        currentProjectId: 'proj_sacred_valley',
+        viewMode: 'editor', // 'editor' | 'scrivenings' | 'corkboard' | 'outliner'
+        searchQuery: '',
+        editorFont: 'serif',
+        editorFontSize: 18,
+        darkMode: false,
+        syncDirectoryHandle: null,
+        focusMode: {
+          active: false,
+          theme: 'parchment',
+          typewriter: false,
+          paraDimming: false,
+          sessionStartWords: 0,
+          pomodoroSeconds: 25 * 60,
+          pomodoroRunning: false
+        }
+      };
+
+      let pomodoroInterval = null;
+
+      // Load state safely from localStorage
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && Array.isArray(parsed.projects) && parsed.projects.length > 0) {
+              state.projects = parsed.projects;
+              state.currentProjectId = parsed.currentProjectId || parsed.projects[0].id;
+              state.editorFont = parsed.editorFont || 'serif';
+              state.editorFontSize = parsed.editorFontSize || 18;
+              state.darkMode = Boolean(parsed.darkMode);
+            }
+          }
+        } catch (err) {
+          // Ignore storage errors in sandboxed iframes
+        }
+      }
+
+      function saveState() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            projects: state.projects,
+            currentProjectId: state.currentProjectId,
+            editorFont: state.editorFont,
+            editorFontSize: state.editorFontSize,
+            darkMode: state.darkMode
+          }));
+          const saveEl = document.getElementById('saveIndicator');
+          if (saveEl) {
+            saveEl.textContent = state.syncDirectoryHandle ? 'Synced' : 'Saved';
+          }
+        } catch (err) {
+          // Ignore storage errors
+        }
+      }
+
+      function showToast(msg) {
+        const banner = document.getElementById('toastBanner');
+        if (!banner) return;
+        banner.textContent = msg;
+        banner.classList.remove('opacity-0');
+        banner.classList.add('opacity-100');
+        clearTimeout(banner._hideTimer);
+        banner._hideTimer = setTimeout(() => {
+          banner.classList.remove('opacity-100');
+          banner.classList.add('opacity-0');
+        }, 2300);
+      }
+
+      function stripHtml(html) {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = html || '';
+        return (tmp.textContent || tmp.innerText || '').replace(/\s+/g, ' ').trim();
+      }
+
+      function htmlToMarkdownParagraphs(html) {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = html || '';
+        const paras = Array.from(tmp.querySelectorAll('p, blockquote, h2, div'))
+          .map(p => (p.textContent || '').trim())
+          .filter(Boolean);
+        return paras.length > 0 ? paras.join('\n\n') : stripHtml(html);
+      }
+
+      function markdownToHtmlParagraphs(md) {
+        const cleaned = (md || '').trim();
+        if (!cleaned) return '<p></p>';
+        return cleaned
+          .split(/\n\s*\n/)
+          .map(block => `<p>${block.trim().replace(/\n/g, '<br>')}</p>`)
+          .join('');
+      }
+
+      function countWords(htmlOrText) {
+        const clean = stripHtml(htmlOrText);
+        if (!clean) return 0;
+        return clean.split(/\s+/).filter(Boolean).length;
+      }
+
+      function getCurrentProject() {
+        return state.projects.find(p => p.id === state.currentProjectId) || state.projects[0];
+      }
+
+      function getActiveItem() {
+        const proj = getCurrentProject();
+        const found = proj.items.find(i => i.id === proj.activeItemId);
+        if (found) return found;
+        const firstActive = proj.items.find(i => !i.inTrash) || proj.items[0];
+        if (firstActive) proj.activeItemId = firstActive.id;
+        return firstActive;
+      }
+
+      function getOrderedItems(proj) {
+        const activeItems = proj.items.filter(i => !i.inTrash);
+        const roots = activeItems.filter(i => !i.parentId);
+        const result = [];
+        roots.forEach(root => {
+          result.push(root);
+          if (root.type === 'folder') {
+            const children = activeItems.filter(c => c.parentId === root.id);
+            children.forEach(ch => result.push(ch));
+          }
+        });
+        activeItems.forEach(item => {
+          if (!result.includes(item)) result.push(item);
+        });
+        return result;
+      }
+
+      function getProjectTotalWords(proj) {
+        return proj.items
+          .filter(i => !i.inTrash && i.type === 'scene')
+          .reduce((sum, item) => sum + countWords(item.content), 0);
+      }
+
+      // Render Binder Sidebar
+      function renderBinder() {
+        const proj = getCurrentProject();
+        const container = document.getElementById('binderTreeContainer');
+        if (!container) return;
+
+        const q = (state.searchQuery || '').toLowerCase().trim();
+        const ordered = getOrderedItems(proj);
+        const trashed = proj.items.filter(i => i.inTrash);
+
+        const sceneCount = proj.items.filter(i => !i.inTrash && i.type === 'scene').length;
+        document.getElementById('binderItemCount').textContent = sceneCount + (sceneCount === 1 ? ' scene' : ' scenes');
+        document.getElementById('currentProjectTitle').textContent = proj.title;
+
+        container.innerHTML = '';
+
+        ordered.forEach(item => {
+          if (q) {
+            const matchTitle = item.title.toLowerCase().includes(q);
+            const matchSyn = (item.synopsis || '').toLowerCase().includes(q);
+            const matchBody = stripHtml(item.content).toLowerCase().includes(q);
+            if (!matchTitle && !matchSyn && !matchBody) return;
+          } else if (item.parentId) {
+            const parent = proj.items.find(p => p.id === item.parentId);
+            if (parent && parent.expanded === false) return;
+          }
+
+          const isSelected = item.id === proj.activeItemId;
+          const labelStyle = LABEL_COLORS[item.label] || LABEL_COLORS.amber;
+          const words = item.type === 'folder'
+            ? proj.items.filter(c => !c.inTrash && c.parentId === item.id).reduce((s, c) => s + countWords(c.content), 0)
+            : countWords(item.content);
+
+          const row = document.createElement('div');
+          row.className = [
+            'group flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg cursor-pointer transition text-xs',
+            item.parentId ? 'ml-5' : '',
+            isSelected
+              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 font-semibold'
+              : 'hover:bg-stone-800/80 text-stone-300 border border-transparent'
+          ].join(' ');
+
+          const leftWrap = document.createElement('div');
+          leftWrap.className = 'flex items-center gap-2 min-w-0 flex-1';
+
+          if (item.type === 'folder') {
+            const toggleBtn = document.createElement('button');
+            toggleBtn.type = 'button';
+            toggleBtn.className = 'p-0.5 rounded hover:bg-stone-700 text-amber-400 shrink-0';
+            toggleBtn.innerHTML = item.expanded !== false
+              ? '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>'
+              : '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>';
+            toggleBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              item.expanded = item.expanded === false ? true : false;
+              saveState();
+              renderBinder();
+            });
+            leftWrap.appendChild(toggleBtn);
+
+            const folderIcon = document.createElement('span');
+            folderIcon.className = 'text-amber-400 shrink-0';
+            folderIcon.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/></svg>';
+            leftWrap.appendChild(folderIcon);
+          } else {
+            const dot = document.createElement('span');
+            dot.className = 'w-2 h-2 rounded-full shrink-0 ' + labelStyle.dot;
+            leftWrap.appendChild(dot);
+
+            const docIcon = document.createElement('span');
+            docIcon.className = 'text-stone-400 shrink-0';
+            docIcon.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>';
+            leftWrap.appendChild(docIcon);
+          }
+
+          const titleSpan = document.createElement('span');
+          titleSpan.className = 'truncate';
+          titleSpan.textContent = item.title || 'Untitled';
+          leftWrap.appendChild(titleSpan);
+
+          const rightWrap = document.createElement('div');
+          rightWrap.className = 'flex items-center gap-1 shrink-0';
+
+          const wordBadge = document.createElement('span');
+          wordBadge.className = 'text-[10px] px-1.5 py-0.5 rounded bg-stone-800 text-stone-400 font-mono';
+          wordBadge.textContent = words;
+          rightWrap.appendChild(wordBadge);
+
+          row.appendChild(leftWrap);
+          row.appendChild(rightWrap);
+
+          row.addEventListener('click', () => {
+            selectBinderItem(item.id);
+            if (window.innerWidth < 1024) {
+              closeMobileDrawers();
+            }
+          });
+
+          container.appendChild(row);
+        });
+
+        // Render Trash Section if any items are in trash
+        if (trashed.length > 0) {
+          const trashHeader = document.createElement('div');
+          trashHeader.className = 'mt-4 pt-2 border-t border-stone-800 px-2 py-1 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-stone-500';
+          trashHeader.innerHTML = `<span>Trash (${trashed.length})</span>`;
+          const emptyBtn = document.createElement('button');
+          emptyBtn.type = 'button';
+          emptyBtn.className = 'text-rose-400 hover:underline text-[10px] font-normal';
+          emptyBtn.textContent = 'Empty Trash';
+          emptyBtn.addEventListener('click', () => {
+            proj.items = proj.items.filter(i => !i.inTrash);
+            saveState();
+            renderAll();
+            showToast('Trash emptied');
+          });
+          trashHeader.appendChild(emptyBtn);
+          container.appendChild(trashHeader);
+
+          trashed.forEach(tItem => {
+            const tRow = document.createElement('div');
+            tRow.className = 'flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-stone-500 hover:bg-stone-800/60';
+            const tName = document.createElement('span');
+            tName.className = 'truncate line-through';
+            tName.textContent = tItem.title;
+            const restoreBtn = document.createElement('button');
+            restoreBtn.type = 'button';
+            restoreBtn.className = 'text-amber-400 hover:underline text-[11px] shrink-0 ml-2';
+            restoreBtn.textContent = 'Restore';
+            restoreBtn.addEventListener('click', () => {
+              tItem.inTrash = false;
+              saveState();
+              renderAll();
+              showToast('Restored "' + tItem.title + '"');
+            });
+            tRow.appendChild(tName);
+            tRow.appendChild(restoreBtn);
+            container.appendChild(tRow);
+          });
+        }
+
+        // Update manuscript progress bar
+        const totalWords = getProjectTotalWords(proj);
+        const target = Math.max(100, proj.targetWords || 15000);
+        const pct = Math.min(100, Math.round((totalWords / target) * 100));
+        document.getElementById('binderTotalWordsReadout').textContent = `${totalWords.toLocaleString()} / ${target.toLocaleString()} words (${pct}%)`;
+        document.getElementById('projectProgressBar').style.width = pct + '%';
+      }
+
+      function selectBinderItem(itemId) {
+        const proj = getCurrentProject();
+        const item = proj.items.find(i => i.id === itemId);
+        if (!item) return;
+        proj.activeItemId = itemId;
+        saveState();
+        renderAll();
+      }
+
+      // Reorder Logic (Move Up, Down, Indent, Outdent)
+      function moveSelectedItem(direction) {
+        const proj = getCurrentProject();
+        const active = getActiveItem();
+        if (!active) return;
+
+        const siblings = proj.items.filter(i => !i.inTrash && (i.parentId || null) === (active.parentId || null));
+        const idx = siblings.findIndex(s => s.id === active.id);
+        if (idx === -1) return;
+
+        const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+        if (targetIdx < 0 || targetIdx >= siblings.length) {
+          showToast(direction === 'up' ? 'Already at top of group' : 'Already at bottom of group');
+          return;
+        }
+
+        const other = siblings[targetIdx];
+        const idxA = proj.items.findIndex(i => i.id === active.id);
+        const idxB = proj.items.findIndex(i => i.id === other.id);
+
+        const temp = proj.items[idxA];
+        proj.items[idxA] = proj.items[idxB];
+        proj.items[idxB] = temp;
+
+        saveState();
+        renderAll();
+        showToast(direction === 'up' ? 'Moved up in Binder' : 'Moved down in Binder');
+      }
+
+      function indentSelectedItem() {
+        const proj = getCurrentProject();
+        const active = getActiveItem();
+        if (!active || active.type === 'folder') {
+          showToast('Select a scene to nest inside a folder');
+          return;
+        }
+        const folders = proj.items.filter(i => !i.inTrash && i.type === 'folder');
+        if (folders.length === 0) return;
+
+        const ordered = getOrderedItems(proj);
+        const activePos = ordered.findIndex(i => i.id === active.id);
+        let targetFolder = null;
+        for (let i = activePos - 1; i >= 0; i--) {
+          if (ordered[i].type === 'folder') {
+            targetFolder = ordered[i];
+            break;
+          }
+        }
+        if (!targetFolder) targetFolder = folders[0];
+        active.parentId = targetFolder.id;
+        targetFolder.expanded = true;
+        saveState();
+        renderAll();
+        showToast(`Moved into "${targetFolder.title}"`);
+      }
+
+      function outdentSelectedItem() {
+        const proj = getCurrentProject();
+        const active = getActiveItem();
+        if (!active || !active.parentId) {
+          showToast('Item is already at root level');
+          return;
+        }
+        active.parentId = null;
+        saveState();
+        renderAll();
+        showToast('Moved to root level of Binder');
+      }
+
+      // Render Editor View
+      function renderEditorView() {
+        const proj = getCurrentProject();
+        const item = getActiveItem();
+        if (!item) return;
+
+        const labelStyle = LABEL_COLORS[item.label] || LABEL_COLORS.amber;
+        document.getElementById('headerActiveItemTitle').textContent = item.title || 'Untitled';
+        document.getElementById('headerActiveItemBadge').className = 'w-2.5 h-2.5 rounded-full shrink-0 ' + labelStyle.dot;
+
+        const parentFolder = item.parentId ? proj.items.find(p => p.id === item.parentId) : null;
+        document.getElementById('editorFolderBreadcrumb').textContent = parentFolder ? parentFolder.title : (item.type === 'folder' ? 'Folder Container' : 'Manuscript Root');
+        document.getElementById('editorStatusPill').textContent = item.status || 'First Draft';
+        document.getElementById('editorStatusPill').className = 'px-2 py-0.5 rounded-full text-[11px] font-medium ' + labelStyle.badge;
+
+        const titleInput = document.getElementById('editorTitleInput');
+        if (document.activeElement !== titleInput) {
+          titleInput.value = item.title || '';
+        }
+
+        const inlineSyn = document.getElementById('editorInlineSynopsis');
+        if (document.activeElement !== inlineSyn) {
+          inlineSyn.value = item.synopsis || '';
+        }
+
+        const editorBody = document.getElementById('editorBody');
+        editorBody.classList.remove('editor-font-serif', 'editor-font-sans', 'editor-font-mono');
+        editorBody.classList.add('editor-font-' + state.editorFont);
+        editorBody.style.fontSize = state.editorFontSize + 'px';
+
+        if (document.activeElement !== editorBody) {
+          editorBody.innerHTML = item.content || '';
+        }
+
+        updateWordAndTargetReadouts();
+      }
+
+      function updateWordAndTargetReadouts() {
+        const item = getActiveItem();
+        if (!item) return;
+        const words = countWords(item.content);
+        const chars = stripHtml(item.content).length;
+        const readMins = Math.max(1, Math.ceil(words / 220));
+
+        document.getElementById('sceneWordCountReadout').textContent = `${words.toLocaleString()} ${words === 1 ? 'word' : 'words'}`;
+        document.getElementById('sceneCharCountReadout').textContent = `${chars.toLocaleString()} chars`;
+        document.getElementById('sceneReadTimeReadout').textContent = `~${readMins} min read`;
+
+        const goal = Math.max(50, Number(item.target) || 1000);
+        const pct = Math.min(100, Math.round((words / goal) * 100));
+        document.getElementById('sceneTargetBar').style.width = pct + '%';
+        document.getElementById('sceneTargetText').textContent = `${words.toLocaleString()} / ${goal.toLocaleString()}`;
+      }
+
+      // Render Scrivenings Composite View
+      function renderScriveningsView() {
+        const proj = getCurrentProject();
+        const active = getActiveItem();
+        const listEl = document.getElementById('scriveningsList');
+        if (!listEl) return;
+
+        let scenesToRender = [];
+        if (active && active.type === 'folder') {
+          scenesToRender = proj.items.filter(i => !i.inTrash && i.parentId === active.id);
+          document.getElementById('scriveningsHeaderTitle').textContent = `Scrivenings — ${active.title}`;
+        } else {
+          scenesToRender = getOrderedItems(proj).filter(i => i.type === 'scene');
+          document.getElementById('scriveningsHeaderTitle').textContent = `Scrivenings — Full Manuscript Composite`;
+        }
+
+        const totalWords = scenesToRender.reduce((s, sc) => s + countWords(sc.content), 0);
+        document.getElementById('scriveningsTotalWordsBadge').textContent = `${totalWords.toLocaleString()} words across ${scenesToRender.length} scenes`;
+
+        listEl.innerHTML = '';
+
+        if (scenesToRender.length === 0) {
+          listEl.innerHTML = `<div class="py-12 text-center text-stone-400 text-sm">No scenes inside this folder yet. Click <strong>+ Scene</strong> in the Binder to add one.</div>`;
+          return;
+        }
+
+        scenesToRender.forEach((sc, index) => {
+          const block = document.createElement('div');
+          block.className = 'py-6 first:pt-0 last:pb-0 space-y-3';
+
+          const headerBar = document.createElement('div');
+          headerBar.className = 'flex items-center justify-between gap-2';
+          const badgeInfo = LABEL_COLORS[sc.label] || LABEL_COLORS.amber;
+
+          const titleWrap = document.createElement('div');
+          titleWrap.className = 'flex items-center gap-2';
+          titleWrap.innerHTML = `
+            <span class="w-2.5 h-2.5 rounded-full ${badgeInfo.dot}"></span>
+            <span class="text-xs font-mono uppercase tracking-wider text-stone-400">Scene ${index + 1}</span>
+            <span class="text-xs px-2 py-0.5 rounded-full ${badgeInfo.badge}">${sc.status}</span>
+          `;
+
+          const openSingleBtn = document.createElement('button');
+          openSingleBtn.type = 'button';
+          openSingleBtn.className = 'text-xs text-amber-600 dark:text-amber-400 hover:underline font-medium';
+          openSingleBtn.textContent = 'Focus Scene →';
+          openSingleBtn.addEventListener('click', () => {
+            proj.activeItemId = sc.id;
+            setViewMode('editor');
+          });
+
+          headerBar.appendChild(titleWrap);
+          headerBar.appendChild(openSingleBtn);
+
+          const scTitleInput = document.createElement('input');
+          scTitleInput.type = 'text';
+          scTitleInput.value = sc.title;
+          scTitleInput.className = 'w-full text-xl font-bold bg-transparent text-stone-900 dark:text-stone-100 focus:outline-none select-text';
+          scTitleInput.addEventListener('input', () => {
+            sc.title = scTitleInput.value;
+            saveState();
+            renderBinder();
+          });
+
+          const scBody = document.createElement('div');
+          scBody.contentEditable = 'true';
+          scBody.className = `w-full focus:outline-none editor-font-${state.editorFont} text-stone-800 dark:text-stone-200 leading-relaxed space-y-3 select-text`;
+          scBody.style.fontSize = state.editorFontSize + 'px';
+          scBody.innerHTML = sc.content || '';
+          scBody.addEventListener('input', () => {
+            sc.content = scBody.innerHTML;
+            saveState();
+            renderBinder();
+          });
+
+          block.appendChild(headerBar);
+          block.appendChild(scTitleInput);
+          block.appendChild(scBody);
+          listEl.appendChild(block);
+        });
+      }
+
+      // Render Corkboard View
+      function renderCorkboardView() {
+        const proj = getCurrentProject();
+        const active = getActiveItem();
+        const grid = document.getElementById('corkboardGrid');
+        if (!grid) return;
+
+        let cards = [];
+        if (active && active.type === 'folder') {
+          cards = proj.items.filter(i => !i.inTrash && i.parentId === active.id);
+          document.getElementById('corkboardHeaderTitle').textContent = `Corkboard — ${active.title} (${cards.length} cards)`;
+        } else {
+          cards = getOrderedItems(proj).filter(i => i.type === 'scene');
+          document.getElementById('corkboardHeaderTitle').textContent = `Corkboard — All Manuscript Scenes (${cards.length} cards)`;
+        }
+
+        grid.innerHTML = '';
+
+        cards.forEach((sc) => {
+          const labelStyle = LABEL_COLORS[sc.label] || LABEL_COLORS.amber;
+          const words = countWords(sc.content);
+
+          const card = document.createElement('div');
+          card.className = `bg-amber-50/95 dark:bg-stone-900 rounded-xl shadow-md border border-stone-300 dark:border-stone-700 border-l-4 ${labelStyle.border} flex flex-col justify-between overflow-hidden transition hover:shadow-lg`;
+
+          const cardTop = document.createElement('div');
+          cardTop.className = 'p-3.5 border-b border-stone-200/80 dark:border-stone-800 flex items-center justify-between gap-2 bg-white/80 dark:bg-stone-950/60';
+
+          const cardTitleInput = document.createElement('input');
+          cardTitleInput.type = 'text';
+          cardTitleInput.value = sc.title;
+          cardTitleInput.className = 'font-bold text-sm bg-transparent text-stone-900 dark:text-stone-100 focus:outline-none w-full select-text';
+          cardTitleInput.addEventListener('input', () => {
+            sc.title = cardTitleInput.value;
+            saveState();
+            renderBinder();
+          });
+
+          const statusTag = document.createElement('span');
+          statusTag.className = `text-[10px] px-2 py-0.5 rounded font-semibold shrink-0 ${labelStyle.badge}`;
+          statusTag.textContent = sc.status;
+
+          cardTop.appendChild(cardTitleInput);
+          cardTop.appendChild(statusTag);
+
+          const cardBody = document.createElement('div');
+          cardBody.className = 'p-3.5 index-card-lines flex-1';
+          const synArea = document.createElement('textarea');
+          synArea.rows = 4;
+          synArea.value = sc.synopsis || '';
+          synArea.placeholder = 'Write index card synopsis...';
+          synArea.className = 'w-full bg-transparent text-xs text-stone-700 dark:text-stone-300 focus:outline-none resize-none leading-6 select-text';
+          synArea.addEventListener('input', () => {
+            sc.synopsis = synArea.value;
+            saveState();
+          });
+          cardBody.appendChild(synArea);
+
+          const cardFooter = document.createElement('div');
+          cardFooter.className = 'px-3.5 py-2 bg-stone-100/90 dark:bg-stone-950 border-t border-stone-200/80 dark:border-stone-800 flex items-center justify-between text-[11px] text-stone-500';
+
+          const wordSpan = document.createElement('span');
+          wordSpan.className = 'font-mono';
+          wordSpan.textContent = `${words} words`;
+
+          const actionsWrap = document.createElement('div');
+          actionsWrap.className = 'flex items-center gap-1';
+
+          const btnLeft = document.createElement('button');
+          btnLeft.type = 'button';
+          btnLeft.className = 'px-1.5 py-0.5 rounded bg-stone-200 dark:bg-stone-800 hover:bg-amber-500 hover:text-white transition';
+          btnLeft.textContent = '↑';
+          btnLeft.title = 'Move Scene Earlier';
+          btnLeft.addEventListener('click', () => {
+            proj.activeItemId = sc.id;
+            moveSelectedItem('up');
+          });
+
+          const btnRight = document.createElement('button');
+          btnRight.type = 'button';
+          btnRight.className = 'px-1.5 py-0.5 rounded bg-stone-200 dark:bg-stone-800 hover:bg-amber-500 hover:text-white transition';
+          btnRight.textContent = '↓';
+          btnRight.title = 'Move Scene Later';
+          btnRight.addEventListener('click', () => {
+            proj.activeItemId = sc.id;
+            moveSelectedItem('down');
+          });
+
+          const btnOpen = document.createElement('button');
+          btnOpen.type = 'button';
+          btnOpen.className = 'ml-1 px-2 py-0.5 rounded bg-amber-600 text-white font-semibold hover:bg-amber-500 transition';
+          btnOpen.textContent = 'Edit Prose';
+          btnOpen.addEventListener('click', () => {
+            proj.activeItemId = sc.id;
+            setViewMode('editor');
+          });
+
+          actionsWrap.appendChild(btnLeft);
+          actionsWrap.appendChild(btnRight);
+          actionsWrap.appendChild(btnOpen);
+
+          cardFooter.appendChild(wordSpan);
+          cardFooter.appendChild(actionsWrap);
+
+          card.appendChild(cardTop);
+          card.appendChild(cardBody);
+          card.appendChild(cardFooter);
+          grid.appendChild(card);
+        });
+      }
+
+      // Render Outliner View
+      function renderOutlinerView() {
+        const proj = getCurrentProject();
+        const tbody = document.getElementById('outlinerTableBody');
+        if (!tbody) return;
+
+        const ordered = getOrderedItems(proj);
+        tbody.innerHTML = '';
+
+        ordered.forEach(item => {
+          const tr = document.createElement('tr');
+          tr.className = item.type === 'folder'
+            ? 'bg-stone-100/80 dark:bg-stone-900/60 font-semibold'
+            : 'hover:bg-amber-50/40 dark:hover:bg-stone-900/40';
+
+          const labelInfo = LABEL_COLORS[item.label] || LABEL_COLORS.amber;
+          const words = item.type === 'folder'
+            ? proj.items.filter(c => !c.inTrash && c.parentId === item.id).reduce((s, c) => s + countWords(c.content), 0)
+            : countWords(item.content);
+          const target = Math.max(100, Number(item.target) || 1000);
+          const pct = Math.min(100, Math.round((words / target) * 100));
+
+          const tdTitle = document.createElement('td');
+          tdTitle.className = 'py-2.5 px-3 ' + (item.parentId ? 'pl-7' : '');
+          const titleBtn = document.createElement('button');
+          titleBtn.type = 'button';
+          titleBtn.className = 'text-left font-semibold text-stone-900 dark:text-stone-100 hover:text-amber-600 dark:hover:text-amber-400 block';
+          titleBtn.textContent = (item.type === 'folder' ? '📁 ' : '📄 ') + item.title;
+          titleBtn.addEventListener('click', () => {
+            proj.activeItemId = item.id;
+            setViewMode('editor');
+          });
+          const synSub = document.createElement('p');
+          synSub.className = 'text-[11px] text-stone-500 dark:text-stone-400 font-normal line-clamp-1 mt-0.5';
+          synSub.textContent = item.synopsis || 'No synopsis';
+          tdTitle.appendChild(titleBtn);
+          tdTitle.appendChild(synSub);
+
+          const tdLabel = document.createElement('td');
+          tdLabel.className = 'py-2.5 px-3';
+          tdLabel.innerHTML = `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] ${labelInfo.badge}"><span class="w-2 h-2 rounded-full ${labelInfo.dot}"></span>${labelInfo.name}</span>`;
+
+          const tdStatus = document.createElement('td');
+          tdStatus.className = 'py-2.5 px-3 text-stone-700 dark:text-stone-300';
+          tdStatus.textContent = item.status || 'First Draft';
+
+          const tdWords = document.createElement('td');
+          tdWords.className = 'py-2.5 px-3 font-mono';
+          tdWords.innerHTML = `
+            <div class="flex items-center gap-2">
+              <span>${words} / ${target}</span>
+              <div class="w-16 h-1.5 bg-stone-200 dark:bg-stone-800 rounded-full overflow-hidden">
+                <div class="h-full bg-amber-500" style="width:${pct}%"></div>
+              </div>
+            </div>
+          `;
+
+          const tdMove = document.createElement('td');
+          tdMove.className = 'py-2.5 px-3 text-right whitespace-nowrap';
+          const upB = document.createElement('button');
+          upB.type = 'button';
+          upB.className = 'px-2 py-1 rounded bg-stone-200 dark:bg-stone-800 hover:bg-amber-500 hover:text-white mr-1';
+          upB.textContent = '↑';
+          upB.addEventListener('click', () => {
+            proj.activeItemId = item.id;
+            moveSelectedItem('up');
+          });
+          const dnB = document.createElement('button');
+          dnB.type = 'button';
+          dnB.className = 'px-2 py-1 rounded bg-stone-200 dark:bg-stone-800 hover:bg-amber-500 hover:text-white';
+          dnB.textContent = '↓';
+          dnB.addEventListener('click', () => {
+            proj.activeItemId = item.id;
+            moveSelectedItem('down');
+          });
+          tdMove.appendChild(upB);
+          tdMove.appendChild(dnB);
+
+          tr.appendChild(tdTitle);
+          tr.appendChild(tdLabel);
+          tr.appendChild(tdStatus);
+          tr.appendChild(tdWords);
+          tr.appendChild(tdMove);
+          tbody.appendChild(tr);
+        });
+      }
+
+      // Render Inspector Panel
+      function renderInspector() {
+        const item = getActiveItem();
+        if (!item) return;
+
+        const synEl = document.getElementById('inspectorSynopsis');
+        if (document.activeElement !== synEl) synEl.value = item.synopsis || '';
+
+        const notesEl = document.getElementById('inspectorNotes');
+        if (document.activeElement !== notesEl) notesEl.value = item.notes || '';
+
+        document.getElementById('inspectorLabelSelect').value = item.label || 'amber';
+        document.getElementById('inspectorStatusSelect').value = item.status || 'First Draft';
+
+        const targetEl = document.getElementById('inspectorTargetInput');
+        if (document.activeElement !== targetEl) targetEl.value = item.target || 1000;
+
+        renderSnapshotsList(item);
+      }
+
+      function renderSnapshotsList(item) {
+        const container = document.getElementById('snapshotsListContainer');
+        if (!container) return;
+        const snaps = item.snapshots || [];
+        container.innerHTML = '';
+
+        if (snaps.length === 0) {
+          container.innerHTML = `<p class="text-xs text-stone-400 text-center py-6">No snapshots saved for this scene yet.</p>`;
+          return;
+        }
+
+        snaps.slice().reverse().forEach(snap => {
+          const card = document.createElement('div');
+          card.className = 'p-2.5 rounded-lg border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 space-y-1.5 text-xs';
+          const top = document.createElement('div');
+          top.className = 'flex items-center justify-between font-semibold text-stone-700 dark:text-stone-300';
+          top.innerHTML = `<span>${snap.timestamp}</span><span class="font-mono text-[11px] text-amber-600">${snap.wordCount} words</span>`;
+
+          const preview = document.createElement('p');
+          preview.className = 'text-stone-500 dark:text-stone-400 line-clamp-2 italic text-[11px]';
+          preview.textContent = stripHtml(snap.content) || '(Empty scene)';
+
+          const btnRow = document.createElement('div');
+          btnRow.className = 'flex items-center justify-end gap-2 pt-1';
+
+          const restoreBtn = document.createElement('button');
+          restoreBtn.type = 'button';
+          restoreBtn.className = 'px-2 py-1 rounded bg-amber-600/15 text-amber-700 dark:text-amber-300 hover:bg-amber-600 hover:text-white font-medium text-[11px] transition';
+          restoreBtn.textContent = 'Restore Version';
+          restoreBtn.addEventListener('click', () => {
+            item.content = snap.content;
+            saveState();
+            renderAll();
+            showToast('Snapshot restored to editor');
+          });
+
+          btnRow.appendChild(restoreBtn);
+          card.appendChild(top);
+          card.appendChild(preview);
+          card.appendChild(btnRow);
+          container.appendChild(card);
+        });
+      }
+
+      // View Mode Switching
+      function setViewMode(mode) {
+        state.viewMode = mode;
+        const modes = ['editor', 'scrivenings', 'corkboard', 'outliner'];
+        const btnMap = {
+          editor: document.getElementById('viewBtnEditor'),
+          scrivenings: document.getElementById('viewBtnScrivenings'),
+          corkboard: document.getElementById('viewBtnCorkboard'),
+          outliner: document.getElementById('viewBtnOutliner')
+        };
+        const containerMap = {
+          editor: document.getElementById('viewContainerEditor'),
+          scrivenings: document.getElementById('viewContainerScrivenings'),
+          corkboard: document.getElementById('viewContainerCorkboard'),
+          outliner: document.getElementById('viewContainerOutliner')
+        };
+
+        modes.forEach(m => {
+          if (m === mode) {
+            btnMap[m].className = 'px-2.5 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-1 bg-amber-600 text-white';
+            containerMap[m].classList.remove('hidden');
+          } else {
+            btnMap[m].className = 'px-2.5 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-1 text-stone-300 hover:text-white';
+            containerMap[m].classList.add('hidden');
+          }
+        });
+
+        const toolbar = document.getElementById('editorToolbar');
+        if (mode === 'editor' || mode === 'scrivenings') {
+          toolbar.classList.remove('hidden');
+        } else {
+          toolbar.classList.add('hidden');
+        }
+
+        renderAll();
+      }
+
+      // Focus Mode Logic
+      function enterFocusMode() {
+        const item = getActiveItem();
+        if (!item) return;
+        state.focusMode.active = true;
+        state.focusMode.sessionStartWords = countWords(item.content);
+
+        const overlay = document.getElementById('focusModeOverlay');
+        overlay.classList.remove('hidden');
+
+        const hudDrawer = document.getElementById('focusHudDrawer');
+        if (hudDrawer) hudDrawer.classList.add('hidden');
+
+        document.getElementById('focusSceneTitle').textContent = item.title || 'Untitled';
+        document.getElementById('focusTitleInput').value = item.title || '';
+        const focusBody = document.getElementById('focusEditorBody');
+        focusBody.innerHTML = item.content || '';
+        focusBody.classList.remove('editor-font-serif', 'editor-font-sans', 'editor-font-mono');
+        focusBody.classList.add('editor-font-' + state.editorFont);
+
+        // Push browser history state so Android hardware/gesture Back exits Focus Mode
+        try {
+          window.history.pushState({ scrivFocusMode: true }, '');
+        } catch (err) {
+          // Ignore in restricted sandbox
+        }
+
+        applyFocusTheme(state.focusMode.theme);
+        updateFocusStats();
+        focusBody.focus();
+      }
+
+      function exitFocusMode() {
+        state.focusMode.active = false;
+        const hudDrawer = document.getElementById('focusHudDrawer');
+        if (hudDrawer) hudDrawer.classList.add('hidden');
+        document.getElementById('focusModeOverlay').classList.add('hidden');
+        renderAll();
+      }
+
+      function applyFocusTheme(themeKey) {
+        state.focusMode.theme = themeKey;
+        const overlay = document.getElementById('focusModeOverlay');
+        overlay.classList.remove(
+          'focus-theme-parchment',
+          'focus-theme-light',
+          'focus-theme-sepia',
+          'focus-theme-dusk',
+          'focus-theme-oled'
+        );
+        overlay.classList.add('focus-theme-' + themeKey);
+      }
+
+      function updateFocusStats() {
+        const item = getActiveItem();
+        if (!item) return;
+        const words = countWords(item.content);
+        const delta = words - (state.focusMode.sessionStartWords || 0);
+        document.getElementById('focusWordCount').textContent = `${words.toLocaleString()} words in scene`;
+        document.getElementById('focusSessionDelta').textContent = `${delta >= 0 ? '+' : ''}${delta} session words`;
+      }
+
+      function highlightActiveParagraphInFocus() {
+        const focusBody = document.getElementById('focusEditorBody');
+        if (!focusBody) return;
+        const children = focusBody.querySelectorAll('p, div, blockquote');
+        children.forEach(el => el.classList.remove('active-para'));
+
+        const sel = window.getSelection();
+        if (sel && sel.anchorNode) {
+          let node = sel.anchorNode;
+          while (node && node !== focusBody) {
+            if (node.nodeType === 1 && (node.tagName === 'P' || node.tagName === 'DIV' || node.tagName === 'BLOCKQUOTE')) {
+              node.classList.add('active-para');
+              if (state.focusMode.typewriter) {
+                node.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }
+              break;
+            }
+            node = node.parentNode;
+          }
+        }
+      }
+
+      // Add New Scene or Folder
+      function createNewBinderItem(type) {
+        const proj = getCurrentProject();
+        const active = getActiveItem();
+        let parentId = null;
+        if (type === 'scene') {
+          if (active && active.type === 'folder') {
+            parentId = active.id;
+            active.expanded = true;
+          } else if (active && active.parentId) {
+            parentId = active.parentId;
+          }
+        }
+
+        const newItem = {
+          id: (type === 'folder' ? 'fld_' : 'sc_') + Date.now(),
+          type: type,
+          parentId: parentId,
+          title: type === 'folder' ? 'New Chapter Folder' : 'Untitled Scene',
+          synopsis: '',
+          notes: '',
+          label: 'amber',
+          status: 'First Draft',
+          target: type === 'folder' ? 2500 : 1000,
+          expanded: true,
+          inTrash: false,
+          content: type === 'scene' ? '<p></p>' : '',
+          snapshots: []
+        };
+
+        proj.items.push(newItem);
+        proj.activeItemId = newItem.id;
+        saveState();
+        if (type === 'scene' && state.viewMode !== 'corkboard') {
+          setViewMode('editor');
+        } else {
+          renderAll();
+        }
+        showToast(type === 'folder' ? 'Created new folder' : 'Created new scene');
+      }
+
+      // Mobile Drawers Management
+      function closeMobileDrawers() {
+        const binder = document.getElementById('binderSidebar');
+        const inspector = document.getElementById('inspectorSidebar');
+        const backdrop = document.getElementById('mobileDrawerBackdrop');
+        binder.classList.add('-translate-x-full');
+        inspector.classList.add('translate-x-full');
+        backdrop.classList.add('hidden');
+      }
+
+      // Compile Manuscript Generator
+      function buildCompiledManuscript() {
+        const proj = getCurrentProject();
+        const sepType = document.getElementById('compileSeparatorSelect').value;
+        const headingMode = document.getElementById('compileHeadingSelect').value;
+        const fmt = document.getElementById('compileFormatSelect').value;
+
+        const sepMap = {
+          hashes: '\n\n# # #\n\n',
+          stars: '\n\n* * *\n\n',
+          line: '\n\n---\n\n',
+          space: '\n\n'
+        };
+        const sep = sepMap[sepType] || '\n\n# # #\n\n';
+
+        const ordered = getOrderedItems(proj).filter(i => !i.title.toLowerCase().includes('research'));
+        let parts = [];
+        let sceneCounter = 0;
+        let totalWords = 0;
+
+        ordered.forEach(item => {
+          if (item.type === 'folder') {
+            if (headingMode === 'both' || headingMode === 'folders') {
+              parts.push((fmt === 'md' ? `# ${item.title}\n` : `${item.title.toUpperCase()}\n`));
+            }
+          } else if (item.type === 'scene') {
+            const text = stripHtml(item.content);
+            if (!text && !item.title) return;
+            sceneCounter++;
+            totalWords += countWords(item.content);
+            let chunk = '';
+            if (headingMode === 'both') {
+              chunk += (fmt === 'md' ? `## ${item.title}\n\n` : `${item.title}\n\n`);
+            }
+            chunk += htmlToMarkdownParagraphs(item.content);
+            parts.push(chunk);
+          }
+        });
+
+        const compiledText = `# ${proj.title}\n\n` + parts.join(sep);
+        document.getElementById('compilePreviewArea').value = compiledText;
+        document.getElementById('compileSummaryStats').textContent = `${sceneCounter} scenes • ${totalWords.toLocaleString()} words`;
+      }
+
+      // DESKTOP SCRIVENER ↔ ANDROID SYNC FUNCTIONS
+      function parseScrivenerNumberedFilename(filename) {
+        // Matches Scrivener External Folder pattern: "01 - Title [UUID].md" or "1 Title.txt"
+        const noExt = filename.replace(/\.[^.]+$/, '');
+        const match = noExt.match(/^(?:(\d+)\s*[-_.]?\s*)?(.+?)(?:\s*\[([^\]]+)\])?$/);
+        if (!match) return { order: 999, title: noExt, syncId: null };
+        return {
+          order: match[1] ? parseInt(match[1], 10) : 999,
+          title: (match[2] || noExt).trim(),
+          syncId: match[3] || null
+        };
+      }
+
+      function parseYamlFrontmatterAndBody(rawText) {
+        const meta = {};
+        let body = rawText || '';
+        if (body.startsWith('---\n') || body.startsWith('---\r\n')) {
+          const endIdx = body.indexOf('\n---', 3);
+          if (endIdx !== -1) {
+            const yamlBlock = body.slice(4, endIdx).trim();
+            body = body.slice(endIdx + 4).trim();
+            yamlBlock.split(/\r?\n/).forEach(line => {
+              const kv = line.match(/^([a-zA-Z0-9_-]+):\s*(.*)$/);
+              if (kv) {
+                meta[kv[1].trim()] = kv[2].trim().replace(/^["']|["']$/g, '');
+              }
+            });
+          }
+        }
+        return { meta, body };
+      }
+
+      function buildScrivenerSyncFileContent(item, indexNum, parentTitle, includeYaml) {
+        const bodyMd = htmlToMarkdownParagraphs(item.content);
+        if (!includeYaml) return bodyMd + '\n';
+        const header = [
+          '---',
+          `title: "${(item.title || '').replace(/"/g, '\\"')}"`,
+          `scriv_id: "${item.id}"`,
+          `binder_order: ${indexNum}`,
+          `parent_folder: "${(parentTitle || 'Root').replace(/"/g, '\\"')}"`,
+          `status: "${item.status || 'First Draft'}"`,
+          `label: "${item.label || 'amber'}"`,
+          `target: ${item.target || 1000}`,
+          `synopsis: "${(item.synopsis || '').replace(/"/g, '\\"')}"`,
+          '---',
+          ''
+        ].join('\n');
+        return header + bodyMd + '\n';
+      }
+
+      async function linkLocalSyncFolder() {
+        if (typeof window.showDirectoryPicker !== 'function') {
+          showToast('Direct Folder API requires Chrome on Android/Desktop outside iframe; use File Import/Export buttons below');
+          return;
+        }
+        try {
+          const dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+          state.syncDirectoryHandle = dirHandle;
+          document.getElementById('folderLinkBadge').textContent = 'Linked: ' + dirHandle.name;
+          document.getElementById('folderLinkBadge').className = 'text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-semibold shrink-0';
+          document.getElementById('syncStatusLabel').textContent = 'Synced: ' + dirHandle.name;
+
+          // Read existing .md / .txt files in the folder or Draft subfolder
+          const importedEntries = [];
+          for await (const entry of dirHandle.values()) {
+            if (entry.kind === 'file' && /\.(md|txt)$/i.test(entry.name)) {
+              const file = await entry.getFile();
+              const text = await file.text();
+              importedEntries.push({ name: entry.name, text });
+            }
+          }
+          if (importedEntries.length > 0) {
+            ingestSyncedTextFiles(importedEntries, dirHandle.name);
+          } else {
+            showToast(`Linked folder "${dirHandle.name}". Tap Push to write Binder scenes.`);
+          }
+        } catch (err) {
+          showToast('Folder selection cancelled or blocked by sandbox');
+        }
+      }
+
+      function ingestSyncedTextFiles(fileEntries, sourceLabel) {
+        const proj = getCurrentProject();
+        const parsedList = fileEntries.map(f => {
+          const fnInfo = parseScrivenerNumberedFilename(f.name);
+          const { meta, body } = parseYamlFrontmatterAndBody(f.text);
+          return {
+            order: meta.binder_order ? parseInt(meta.binder_order, 10) : fnInfo.order,
+            id: meta.scriv_id || fnInfo.syncId || ('sc_sync_' + Math.random().toString(36).slice(2, 8)),
+            title: meta.title || fnInfo.title,
+            synopsis: meta.synopsis || '',
+            status: meta.status || 'First Draft',
+            label: meta.label || 'amber',
+            target: meta.target ? parseInt(meta.target, 10) : 1000,
+            parentFolderTitle: meta.parent_folder || null,
+            content: markdownToHtmlParagraphs(body)
+          };
+        }).sort((a, b) => a.order - b.order);
+
+        parsedList.forEach(entry => {
+          let parentId = null;
+          if (entry.parentFolderTitle && entry.parentFolderTitle !== 'Root') {
+            let folder = proj.items.find(i => !i.inTrash && i.type === 'folder' && i.title === entry.parentFolderTitle);
+            if (!folder) {
+              folder = {
+                id: 'fld_sync_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+                type: 'folder',
+                parentId: null,
+                title: entry.parentFolderTitle,
+                synopsis: '',
+                notes: '',
+                label: 'amber',
+                status: 'First Draft',
+                target: 2500,
+                expanded: true,
+                inTrash: false,
+                content: '',
+                snapshots: []
+              };
+              proj.items.push(folder);
+            }
+            parentId = folder.id;
+          }
+
+          const existing = proj.items.find(i => i.id === entry.id || (i.type === 'scene' && i.title === entry.title));
+          if (existing) {
+            existing.title = entry.title;
+            existing.content = entry.content;
+            if (entry.synopsis) existing.synopsis = entry.synopsis;
+            if (entry.status) existing.status = entry.status;
+            if (entry.label) existing.label = entry.label;
+            if (parentId) existing.parentId = parentId;
+          } else {
+            proj.items.push({
+              id: entry.id,
+              type: 'scene',
+              parentId: parentId,
+              title: entry.title,
+              synopsis: entry.synopsis,
+              notes: '',
+              label: entry.label,
+              status: entry.status,
+              target: entry.target,
+              inTrash: false,
+              content: entry.content,
+              snapshots: []
+            });
+          }
+        });
+
+        saveState();
+        renderAll();
+        showToast(`Synced ${parsedList.length} scenes from ${sourceLabel}`);
+      }
+
+      async function pushBinderToSyncFolder() {
+        const proj = getCurrentProject();
+        const includeYaml = document.getElementById('chkIncludeYamlFrontmatter').checked;
+        const ordered = getOrderedItems(proj);
+        const scenes = ordered.filter(i => i.type === 'scene');
+
+        if (state.syncDirectoryHandle) {
+          try {
+            let orderNum = 1;
+            for (const sc of scenes) {
+              const parent = sc.parentId ? proj.items.find(p => p.id === sc.parentId) : null;
+              const prefix = String(orderNum).padStart(2, '0');
+              const safeTitle = (sc.title || 'Scene').replace(/[\\/:*?"<>|]/g, '');
+              const fileName = `${prefix} - ${safeTitle} [${sc.id}].md`;
+              const fileHandle = await state.syncDirectoryHandle.getFileHandle(fileName, { create: true });
+              const writable = await fileHandle.createWritable();
+              await writable.write(buildScrivenerSyncFileContent(sc, orderNum, parent ? parent.title : 'Root', includeYaml));
+              await writable.close();
+              orderNum++;
+            }
+            showToast(`Wrote ${scenes.length} numbered Scrivener sync files to "${state.syncDirectoryHandle.name}"`);
+            return;
+          } catch (err) {
+            // Fall through to bundle download if directory permission expired
+          }
+        }
+
+        // Fallback: Download a Scrivener External Folder Sync Manifest / Bundle
+        let orderNum = 1;
+        const bundleFiles = scenes.map(sc => {
+          const parent = sc.parentId ? proj.items.find(p => p.id === sc.parentId) : null;
+          const prefix = String(orderNum).padStart(2, '0');
+          const safeTitle = (sc.title || 'Scene').replace(/[\\/:*?"<>|]/g, '');
+          const fileName = `Draft/${prefix} - ${safeTitle} [${sc.id}].md`;
+          const content = buildScrivenerSyncFileContent(sc, orderNum, parent ? parent.title : 'Root', includeYaml);
+          orderNum++;
+          return `<!-- FILE: ${fileName} -->\n${content}`;
+        }).join('\n\n');
+
+        const blob = new Blob([bundleFiles], { type: 'text/markdown;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = proj.title.toLowerCase().replace(/[^a-z0-9]+/g, '_') + '_external_folder_sync.md';
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Downloaded numbered Scrivener External Sync bundle');
+      }
+
+      // Parse Desktop .scrivx XML Binder Structure
+      function importDesktopScrivxXml(xmlString, fileName) {
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
+        const binderNodes = xmlDoc.querySelectorAll('Binder > BinderItem');
+        if (!binderNodes || binderNodes.length === 0) {
+          showToast('No BinderItem elements found in .scrivx XML');
+          return;
+        }
+
+        const newItems = [];
+        function walkBinderNode(node, parentFolderId) {
+          const uuid = node.getAttribute('UUID') || node.getAttribute('ID') || ('sc_' + Math.random().toString(36).slice(2, 8));
+          const rawType = (node.getAttribute('Type') || 'Text').toLowerCase();
+          const titleEl = node.querySelector(':scope > Title');
+          const title = titleEl ? titleEl.textContent : 'Untitled';
+          const synEl = node.querySelector(':scope > MetaData > Synopsis');
+          const synopsis = synEl ? synEl.textContent : '';
+
+          if (rawType.includes('trash')) return;
+
+          const isFolder = rawType.includes('folder') || rawType.includes('draft');
+          const itemId = isFolder ? ('fld_' + uuid) : ('sc_' + uuid);
+
+          // Skip top-level "DraftFolder" wrapper so its children become clean root folders/scenes
+          if (rawType === 'draftfolder' || rawType === 'researchfolder') {
+            const children = node.querySelectorAll(':scope > Children > BinderItem');
+            children.forEach(ch => walkBinderNode(ch, null));
+            return;
+          }
+
+          newItems.push({
+            id: itemId,
+            type: isFolder ? 'folder' : 'scene',
+            parentId: parentFolderId,
+            title: title,
+            synopsis: synopsis,
+            notes: 'Imported from desktop .scrivx (' + UUIDShort(uuid) + ')',
+            label: 'amber',
+            status: 'First Draft',
+            target: isFolder ? 3000 : 1000,
+            expanded: true,
+            inTrash: false,
+            content: isFolder ? '' : `<p>${synopsis || 'Scene imported from Desktop Scrivener Binder. Sync External Folder to load prose.'}</p>`,
+            snapshots: []
+          });
+
+          const childNodes = node.querySelectorAll(':scope > Children > BinderItem');
+          childNodes.forEach(ch => walkBinderNode(ch, isFolder ? itemId : parentFolderId));
+        }
+
+        function UUIDShort(u) {
+          return String(u).slice(0, 8);
+        }
+
+        binderNodes.forEach(n => walkBinderNode(n, null));
+
+        if (newItems.length > 0) {
+          const projTitle = fileName.replace(/\.scrivx$/i, '').replace(/[-_]/g, ' ');
+          const newProj = {
+            id: 'proj_scrivx_' + Date.now(),
+            title: projTitle + ' (Desktop .scrivx)',
+            targetWords: 20000,
+            activeItemId: newItems[0].id,
+            items: newItems
+          };
+          state.projects.push(newProj);
+          state.currentProjectId = newProj.id;
+          saveState();
+          renderAll();
+          document.getElementById('desktopSyncModal').classList.add('hidden');
+          showToast(`Imported ${newItems.length} Binder items from ${fileName}`);
+        }
+      }
+
+      // Export Updated Desktop .scrivx XML Binder Structure
+      function exportDesktopScrivxXml() {
+        const proj = getCurrentProject();
+        const ordered = getOrderedItems(proj);
+        const roots = ordered.filter(i => !i.parentId);
+
+        function escapeXml(str) {
+          return String(str || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+        }
+
+        function renderItemXml(item, indent) {
+          const pad = '  '.repeat(indent);
+          const cleanUuid = item.id.replace(/^(fld_|sc_)/, '');
+          const bType = item.type === 'folder' ? 'Folder' : 'Text';
+          const children = ordered.filter(c => c.parentId === item.id);
+          let xml = `${pad}<BinderItem UUID="${escapeXml(cleanUuid)}" Type="${bType}">\n`;
+          xml += `${pad}  <Title>${escapeXml(item.title)}</Title>\n`;
+          xml += `${pad}  <MetaData>\n`;
+          xml += `${pad}    <IncludeInCompile>Yes</IncludeInCompile>\n`;
+          if (item.synopsis) {
+            xml += `${pad}    <Synopsis>${escapeXml(item.synopsis)}</Synopsis>\n`;
+          }
+          xml += `${pad}  </MetaData>\n`;
+          if (children.length > 0) {
+            xml += `${pad}  <Children>\n`;
+            children.forEach(ch => {
+              xml += renderItemXml(ch, indent + 2);
+            });
+            xml += `${pad}  </Children>\n`;
+          }
+          xml += `${pad}</BinderItem>\n`;
+          return xml;
+        }
+
+        let xmlOut = `<?xml version="1.0" encoding="UTF-8"?>\n<ScrivenerProject Version="2.0" Creator="ScrivenerMobile-Android">\n  <Binder>\n    <BinderItem UUID="DRAFT-ROOT" Type="DraftFolder">\n      <Title>Manuscript</Title>\n      <Children>\n`;
+        roots.forEach(r => {
+          xmlOut += renderItemXml(r, 4);
+        });
+        xmlOut += `      </Children>\n    </BinderItem>\n  </Binder>\n</ScrivenerProject>\n`;
+
+        const blob = new Blob([xmlOut], { type: 'application/xml;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = proj.title.toLowerCase().replace(/[^a-z0-9]+/g, '_') + '.scrivx';
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Exported desktop .scrivx Binder XML');
+      }
+
+      // Render Project Switcher List
+      function renderProjectModalList() {
+        const listEl = document.getElementById('projectListContainer');
+        if (!listEl) return;
+        listEl.innerHTML = '';
+
+        state.projects.forEach(p => {
+          const isCurrent = p.id === state.currentProjectId;
+          const words = getProjectTotalWords(p);
+          const row = document.createElement('div');
+          row.className = `flex items-center justify-between p-2.5 rounded-xl border text-xs ${
+            isCurrent
+              ? 'border-amber-500 bg-amber-50/60 dark:bg-amber-950/30 font-semibold'
+              : 'border-stone-200 dark:border-stone-800 hover:bg-stone-50 dark:hover:bg-stone-800/50'
+          }`;
+
+          const infoBtn = document.createElement('button');
+          infoBtn.type = 'button';
+          infoBtn.className = 'text-left flex-1 min-w-0';
+          infoBtn.innerHTML = `<div class="truncate text-stone-900 dark:text-stone-100">${p.title}</div><div class="text-[11px] text-stone-500">${words.toLocaleString()} words • ${p.items.filter(i => !i.inTrash && i.type === 'scene').length} scenes</div>`;
+          infoBtn.addEventListener('click', () => {
+            state.currentProjectId = p.id;
+            saveState();
+            renderAll();
+            document.getElementById('projectModal').classList.add('hidden');
+            showToast(`Switched to "${p.title}"`);
+          });
+
+          row.appendChild(infoBtn);
+
+          if (state.projects.length > 1) {
+            const delBtn = document.createElement('button');
+            delBtn.type = 'button';
+            delBtn.className = 'ml-2 px-2 py-1 rounded text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 text-[11px]';
+            delBtn.textContent = 'Delete';
+            delBtn.addEventListener('click', () => {
+              state.projects = state.projects.filter(proj => proj.id !== p.id);
+              if (state.currentProjectId === p.id) {
+                state.currentProjectId = state.projects[0].id;
+              }
+              saveState();
+              renderProjectModalList();
+              renderAll();
+              showToast('Deleted project');
+            });
+            row.appendChild(delBtn);
+          }
+
+          listEl.appendChild(row);
+        });
+      }
+
+      function applyDarkMode() {
+        if (state.darkMode) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      }
+
+      function renderAll() {
+        applyDarkMode();
+        renderBinder();
+        renderEditorView();
+        if (state.viewMode === 'scrivenings') renderScriveningsView();
+        if (state.viewMode === 'corkboard') renderCorkboardView();
+        if (state.viewMode === 'outliner') renderOutlinerView();
+        renderInspector();
+      }
+
+      // Wire All Event Listeners on DOM Ready
+      function initEvents() {
+        const binder = document.getElementById('binderSidebar');
+        const inspector = document.getElementById('inspectorSidebar');
+        const backdrop = document.getElementById('mobileDrawerBackdrop');
+
+        document.getElementById('btnToggleBinder').addEventListener('click', () => {
+          if (window.innerWidth < 1024) {
+            const isHidden = binder.classList.contains('-translate-x-full');
+            closeMobileDrawers();
+            if (isHidden) {
+              binder.classList.remove('-translate-x-full');
+              backdrop.classList.remove('hidden');
+            }
+          } else {
+            binder.classList.toggle('hidden');
+          }
+        });
+
+        document.getElementById('btnCloseBinderMobile').addEventListener('click', closeMobileDrawers);
+
+        document.getElementById('btnToggleInspector').addEventListener('click', () => {
+          if (window.innerWidth < 1280) {
+            const isHidden = inspector.classList.contains('translate-x-full');
+            closeMobileDrawers();
+            if (isHidden) {
+              inspector.classList.remove('translate-x-full');
+              backdrop.classList.remove('hidden');
+            }
+          } else {
+            inspector.classList.toggle('hidden');
+          }
+        });
+
+        document.getElementById('btnCloseInspectorMobile').addEventListener('click', closeMobileDrawers);
+        backdrop.addEventListener('click', closeMobileDrawers);
+
+        // View Switchers
+        document.getElementById('viewBtnEditor').addEventListener('click', () => setViewMode('editor'));
+        document.getElementById('viewBtnScrivenings').addEventListener('click', () => setViewMode('scrivenings'));
+        document.getElementById('viewBtnCorkboard').addEventListener('click', () => setViewMode('corkboard'));
+        document.getElementById('viewBtnOutliner').addEventListener('click', () => setViewMode('outliner'));
+
+        // Binder Add & Reorder Controls
+        document.getElementById('btnNewScene').addEventListener('click', () => createNewBinderItem('scene'));
+        document.getElementById('btnNewFolder').addEventListener('click', () => createNewBinderItem('folder'));
+        document.getElementById('btnAddSceneFromCorkboard').addEventListener('click', () => createNewBinderItem('scene'));
+        document.getElementById('btnAddSceneFromOutliner').addEventListener('click', () => createNewBinderItem('scene'));
+
+        document.getElementById('btnMoveUp').addEventListener('click', () => moveSelectedItem('up'));
+        document.getElementById('btnMoveDown').addEventListener('click', () => moveSelectedItem('down'));
+        document.getElementById('btnIndentItem').addEventListener('click', indentSelectedItem);
+        document.getElementById('btnOutdentItem').addEventListener('click', outdentSelectedItem);
+
+        // Binder Search
+        const searchInput = document.getElementById('binderSearchInput');
+        const clearSearchBtn = document.getElementById('btnClearBinderSearch');
+        searchInput.addEventListener('input', () => {
+          state.searchQuery = searchInput.value;
+          clearSearchBtn.classList.toggle('hidden', !state.searchQuery);
+          renderBinder();
+        });
+        clearSearchBtn.addEventListener('click', () => {
+          state.searchQuery = '';
+          searchInput.value = '';
+          clearSearchBtn.classList.add('hidden');
+          renderBinder();
+        });
+
+        // Prev / Next Scene Navigation
+        document.getElementById('btnPrevScene').addEventListener('click', () => {
+          const proj = getCurrentProject();
+          const ordered = getOrderedItems(proj);
+          const idx = ordered.findIndex(i => i.id === proj.activeItemId);
+          if (idx > 0) selectBinderItem(ordered[idx - 1].id);
+        });
+        document.getElementById('btnNextScene').addEventListener('click', () => {
+          const proj = getCurrentProject();
+          const ordered = getOrderedItems(proj);
+          const idx = ordered.findIndex(i => i.id === proj.activeItemId);
+          if (idx !== -1 && idx < ordered.length - 1) selectBinderItem(ordered[idx + 1].id);
+        });
+
+        // Editor Inputs
+        const titleInput = document.getElementById('editorTitleInput');
+        titleInput.addEventListener('input', () => {
+          const item = getActiveItem();
+          if (!item) return;
+          item.title = titleInput.value;
+          document.getElementById('headerActiveItemTitle').textContent = item.title || 'Untitled';
+          saveState();
+          renderBinder();
+        });
+
+        const inlineSyn = document.getElementById('editorInlineSynopsis');
+        inlineSyn.addEventListener('input', () => {
+          const item = getActiveItem();
+          if (!item) return;
+          item.synopsis = inlineSyn.value;
+          document.getElementById('inspectorSynopsis').value = item.synopsis;
+          saveState();
+        });
+
+        const editorBody = document.getElementById('editorBody');
+        editorBody.addEventListener('input', () => {
+          const item = getActiveItem();
+          if (!item) return;
+          item.content = editorBody.innerHTML;
+          saveState();
+          updateWordAndTargetReadouts();
+          renderBinder();
+        });
+
+        // Formatting Toolbar
+        document.querySelectorAll('.fmt-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const cmd = btn.getAttribute('data-cmd');
+            document.execCommand(cmd, false, null);
+            editorBody.focus();
+          });
+        });
+
+        document.getElementById('btnFormatH2').addEventListener('click', () => {
+          document.execCommand('formatBlock', false, 'H2');
+          editorBody.focus();
+        });
+
+        document.getElementById('btnFormatQuote').addEventListener('click', () => {
+          document.execCommand('formatBlock', false, 'BLOCKQUOTE');
+          editorBody.focus();
+        });
+
+        document.getElementById('btnInsertSceneBreak').addEventListener('click', () => {
+          document.execCommand('insertHTML', false, '<p style="text-align:center; margin: 1.5em 0;"># # #</p><p><br></p>');
+          editorBody.focus();
+        });
+
+        const fontSelect = document.getElementById('selectEditorFont');
+        fontSelect.value = state.editorFont;
+        fontSelect.addEventListener('change', () => {
+          state.editorFont = fontSelect.value;
+          saveState();
+          renderAll();
+        });
+
+        document.getElementById('btnFontDecrease').addEventListener('click', () => {
+          state.editorFontSize = Math.max(13, state.editorFontSize - 1);
+          document.getElementById('fontSizeLabel').textContent = state.editorFontSize + 'px';
+          saveState();
+          renderAll();
+        });
+
+        document.getElementById('btnFontIncrease').addEventListener('click', () => {
+          state.editorFontSize = Math.min(28, state.editorFontSize + 1);
+          document.getElementById('fontSizeLabel').textContent = state.editorFontSize + 'px';
+          saveState();
+          renderAll();
+        });
+
+        // Inspector Tabs & Inputs
+        const tabNotes = document.getElementById('inspTabNotes');
+        const tabSnaps = document.getElementById('inspTabSnapshots');
+        const panelNotes = document.getElementById('inspectorPanelNotes');
+        const panelSnaps = document.getElementById('inspectorPanelSnapshots');
+
+        tabNotes.addEventListener('click', () => {
+          panelNotes.classList.remove('hidden');
+          panelSnaps.classList.add('hidden');
+          tabNotes.className = 'px-2.5 py-1 rounded-md text-xs font-semibold bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 shadow-sm';
+          tabSnaps.className = 'px-2.5 py-1 rounded-md text-xs font-semibold text-stone-600 dark:text-stone-400';
+        });
+
+        tabSnaps.addEventListener('click', () => {
+          panelSnaps.classList.remove('hidden');
+          panelNotes.classList.add('hidden');
+          tabSnaps.className = 'px-2.5 py-1 rounded-md text-xs font-semibold bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 shadow-sm';
+          tabNotes.className = 'px-2.5 py-1 rounded-md text-xs font-semibold text-stone-600 dark:text-stone-400';
+        });
+
+        document.getElementById('inspectorSynopsis').addEventListener('input', (e) => {
+          const item = getActiveItem();
+          if (!item) return;
+          item.synopsis = e.target.value;
+          document.getElementById('editorInlineSynopsis').value = item.synopsis;
+          saveState();
+          if (state.viewMode === 'corkboard') renderCorkboardView();
+          if (state.viewMode === 'outliner') renderOutlinerView();
+        });
+
+        document.getElementById('inspectorNotes').addEventListener('input', (e) => {
+          const item = getActiveItem();
+          if (!item) return;
+          item.notes = e.target.value;
+          saveState();
+        });
+
+        document.getElementById('inspectorLabelSelect').addEventListener('change', (e) => {
+          const item = getActiveItem();
+          if (!item) return;
+          item.label = e.target.value;
+          saveState();
+          renderAll();
+        });
+
+        document.getElementById('inspectorStatusSelect').addEventListener('change', (e) => {
+          const item = getActiveItem();
+          if (!item) return;
+          item.status = e.target.value;
+          saveState();
+          renderAll();
+        });
+
+        document.getElementById('inspectorTargetInput').addEventListener('input', (e) => {
+          const item = getActiveItem();
+          if (!item) return;
+          item.target = Math.max(50, Number(e.target.value) || 1000);
+          saveState();
+          updateWordAndTargetReadouts();
+        });
+
+        document.getElementById('btnDuplicateScene').addEventListener('click', () => {
+          const proj = getCurrentProject();
+          const item = getActiveItem();
+          if (!item) return;
+          const copy = JSON.parse(JSON.stringify(item));
+          copy.id = (item.type === 'folder' ? 'fld_' : 'sc_') + Date.now();
+          copy.title = item.title + ' (Copy)';
+          proj.items.push(copy);
+          proj.activeItemId = copy.id;
+          saveState();
+          renderAll();
+          showToast('Duplicated item');
+        });
+
+        document.getElementById('btnTrashScene').addEventListener('click', () => {
+          const proj = getCurrentProject();
+          const item = getActiveItem();
+          if (!item) return;
+          const remaining = proj.items.filter(i => !i.inTrash && i.id !== item.id);
+          if (remaining.length === 0) {
+            showToast('Cannot delete the only item in project');
+            return;
+          }
+          item.inTrash = true;
+          proj.activeItemId = remaining[0].id;
+          saveState();
+          renderAll();
+          showToast('Moved to Binder Trash');
+        });
+
+        document.getElementById('btnTakeSnapshot').addEventListener('click', () => {
+          const item = getActiveItem();
+          if (!item) return;
+          if (!Array.isArray(item.snapshots)) item.snapshots = [];
+          const now = new Date();
+          const stamp = now.toISOString().slice(0, 10) + ' ' + now.toTimeString().slice(0, 5);
+          item.snapshots.push({
+            id: 'snap_' + Date.now(),
+            timestamp: stamp,
+            wordCount: countWords(item.content),
+            content: item.content || ''
+          });
+          saveState();
+          renderSnapshotsList(item);
+          showToast('Snapshot saved');
+        });
+
+        // Theme Toggle
+        document.getElementById('btnToggleTheme').addEventListener('click', () => {
+          state.darkMode = !state.darkMode;
+          saveState();
+          applyDarkMode();
+        });
+
+        // Desktop Sync Modal Controls
+        document.getElementById('btnOpenDesktopSync').addEventListener('click', () => {
+          document.getElementById('desktopSyncModal').classList.remove('hidden');
+        });
+        document.getElementById('btnCloseDesktopSyncModal').addEventListener('click', () => {
+          document.getElementById('desktopSyncModal').classList.add('hidden');
+        });
+        document.getElementById('btnLinkLocalFolder').addEventListener('click', linkLocalSyncFolder);
+        document.getElementById('btnSyncWriteToFolder').addEventListener('click', pushBinderToSyncFolder);
+
+        document.getElementById('inputBatchSyncFiles').addEventListener('change', async (e) => {
+          const files = Array.from(e.target.files || []);
+          if (files.length === 0) return;
+          const entries = [];
+          for (const f of files) {
+            const txt = await f.text();
+            if (f.name.endsWith('.scrivx')) {
+              importDesktopScrivxXml(txt, f.name);
+              return;
+            }
+            entries.push({ name: f.name, text: txt });
+          }
+          if (entries.length > 0) {
+            ingestSyncedTextFiles(entries, `${entries.length} synced files`);
+            document.getElementById('desktopSyncModal').classList.add('hidden');
+          }
+        });
+
+        document.getElementById('inputScrivxFile').addEventListener('change', async (e) => {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
+          const txt = await file.text();
+          importDesktopScrivxXml(txt, file.name);
+        });
+
+        document.getElementById('btnExportScrivxXml').addEventListener('click', exportDesktopScrivxXml);
+
+        // Focus Mode Controls
+        document.getElementById('btnEnterFocus').addEventListener('click', enterFocusMode);
+        document.getElementById('btnExitFocus').addEventListener('click', exitFocusMode);
+
+        const hudDrawer = document.getElementById('focusHudDrawer');
+        document.getElementById('btnQuickExitFocusPill').addEventListener('click', (e) => {
+          e.stopPropagation();
+          hudDrawer.classList.toggle('hidden');
+        });
+
+        // Auto-hide Focus menu sheet when tapping back into the writing area
+        document.getElementById('focusScrollContainer').addEventListener('click', () => {
+          if (!hudDrawer.classList.contains('hidden')) {
+            hudDrawer.classList.add('hidden');
+          }
+        });
+
+        // Support Android Back gesture / button to exit Focus Mode
+        window.addEventListener('popstate', () => {
+          if (state.focusMode.active) {
+            exitFocusMode();
+          }
+        });
+
+        document.getElementById('selectFocusTheme').addEventListener('change', (e) => {
+          applyFocusTheme(e.target.value);
+        });
+
+        const btnTypewriter = document.getElementById('btnToggleTypewriter');
+        btnTypewriter.addEventListener('click', () => {
+          state.focusMode.typewriter = !state.focusMode.typewriter;
+          btnTypewriter.textContent = 'Typewriter: ' + (state.focusMode.typewriter ? 'ON' : 'OFF');
+          showToast(state.focusMode.typewriter ? 'Typewriter scrolling enabled' : 'Typewriter scrolling off');
+        });
+
+        const btnParaDim = document.getElementById('btnToggleParaDim');
+        btnParaDim.addEventListener('click', () => {
+          state.focusMode.paraDimming = !state.focusMode.paraDimming;
+          btnParaDim.textContent = 'Focus Para: ' + (state.focusMode.paraDimming ? 'ON' : 'OFF');
+          const focusBody = document.getElementById('focusEditorBody');
+          focusBody.classList.toggle('paragraph-dimming-active', state.focusMode.paraDimming);
+          highlightActiveParagraphInFocus();
+        });
+
+        const focusTitleInput = document.getElementById('focusTitleInput');
+        focusTitleInput.addEventListener('input', () => {
+          const item = getActiveItem();
+          if (!item) return;
+          item.title = focusTitleInput.value;
+          document.getElementById('focusSceneTitle').textContent = item.title || 'Untitled';
+          saveState();
+        });
+
+        const focusBody = document.getElementById('focusEditorBody');
+        focusBody.addEventListener('input', () => {
+          if (hudDrawer && !hudDrawer.classList.contains('hidden')) {
+            hudDrawer.classList.add('hidden');
+          }
+          const item = getActiveItem();
+          if (!item) return;
+          item.content = focusBody.innerHTML;
+          saveState();
+          updateFocusStats();
+          highlightActiveParagraphInFocus();
+        });
+        focusBody.addEventListener('keyup', highlightActiveParagraphInFocus);
+        focusBody.addEventListener('click', highlightActiveParagraphInFocus);
+
+        // Focus Sprint Timer (Pomodoro)
+        const pomoBtn = document.getElementById('btnFocusPomodoro');
+        function updatePomoLabel() {
+          const m = String(Math.floor(state.focusMode.pomodoroSeconds / 60)).padStart(2, '0');
+          const s = String(state.focusMode.pomodoroSeconds % 60).padStart(2, '0');
+          pomoBtn.textContent = `⏱ ${m}:${s} ${state.focusMode.pomodoroRunning ? 'Pause' : 'Sprint'}`;
+        }
+        pomoBtn.addEventListener('click', () => {
+          state.focusMode.pomodoroRunning = !state.focusMode.pomodoroRunning;
+          clearInterval(pomodoroInterval);
+          if (state.focusMode.pomodoroRunning) {
+            pomodoroInterval = setInterval(() => {
+              if (state.focusMode.pomodoroSeconds > 0) {
+                state.focusMode.pomodoroSeconds--;
+                updatePomoLabel();
+              } else {
+                clearInterval(pomodoroInterval);
+                state.focusMode.pomodoroRunning = false;
+                updatePomoLabel();
+                showToast('25-minute writing sprint complete!');
+              }
+            }, 1000);
+          }
+          updatePomoLabel();
+        });
+
+        document.getElementById('btnFocusResetSprint').addEventListener('click', () => {
+          clearInterval(pomodoroInterval);
+          state.focusMode.pomodoroRunning = false;
+          state.focusMode.pomodoroSeconds = 25 * 60;
+          updatePomoLabel();
+        });
+
+        // Project Switcher & Backup Modal
+        document.getElementById('btnProjectSwitcher').addEventListener('click', () => {
+          renderProjectModalList();
+          document.getElementById('projectModal').classList.remove('hidden');
+        });
+        document.getElementById('btnCloseProjectModal').addEventListener('click', () => {
+          document.getElementById('projectModal').classList.add('hidden');
+        });
+        document.getElementById('btnCreateProject').addEventListener('click', () => {
+          const nameInput = document.getElementById('newProjectNameInput');
+          const title = (nameInput.value || '').trim() || 'Untitled Manuscript';
+          const newProj = {
+            id: 'proj_' + Date.now(),
+            title: title,
+            targetWords: 15000,
+            activeItemId: 'sc_init_' + Date.now(),
+            items: [
+              {
+                id: 'fld_init_' + Date.now(),
+                type: 'folder',
+                parentId: null,
+                title: 'Chapter 1',
+                synopsis: 'Opening chapter folder',
+                notes: '',
+                label: 'amber',
+                status: 'First Draft',
+                target: 2500,
+                expanded: true,
+                inTrash: false,
+                content: '',
+                snapshots: []
+              },
+              {
+                id: 'sc_init_' + Date.now(),
+                type: 'scene',
+                parentId: 'fld_init_' + Date.now(),
+                title: 'Scene 1',
+                synopsis: 'Opening scene beat',
+                notes: '',
+                label: 'amber',
+                status: 'First Draft',
+                target: 1000,
+                inTrash: false,
+                content: '<p></p>',
+                snapshots: []
+              }
+            ]
+          };
+          state.projects.push(newProj);
+          state.currentProjectId = newProj.id;
+          nameInput.value = '';
+          saveState();
+          renderProjectModalList();
+          renderAll();
+          document.getElementById('projectModal').classList.add('hidden');
+          showToast(`Created project "${title}"`);
+        });
+
+        document.getElementById('btnExportJsonBackup').addEventListener('click', () => {
+          const proj = getCurrentProject();
+          const blob = new Blob([JSON.stringify(proj, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = proj.title.toLowerCase().replace(/[^a-z0-9]+/g, '_') + '_scrivener.json';
+          a.click();
+          URL.revokeObjectURL(url);
+          showToast('Project backup downloaded');
+        });
+
+        document.getElementById('inputImportFile').addEventListener('change', (e) => {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = () => {
+            try {
+              const text = String(reader.result || '');
+              if (file.name.endsWith('.json')) {
+                const imported = JSON.parse(text);
+                if (imported && imported.title && Array.isArray(imported.items)) {
+                  imported.id = 'proj_imp_' + Date.now();
+                  state.projects.push(imported);
+                  state.currentProjectId = imported.id;
+                  saveState();
+                  renderAll();
+                  document.getElementById('projectModal').classList.add('hidden');
+                  showToast('Imported project "' + imported.title + '"');
+                }
+              } else {
+                const proj = getCurrentProject();
+                const sections = text.split(/^##\s+/m);
+                sections.forEach((sec, idx) => {
+                  const trimmed = sec.trim();
+                  if (!trimmed) return;
+                  const lines = trimmed.split('\n');
+                  const scTitle = idx === 0 && !text.startsWith('##') ? file.name.replace(/\.[^.]+$/, '') : (lines.shift() || 'Imported Scene');
+                  const bodyHtml = lines.join('\n').trim().split(/\n\n+/).map(p => `<p>${p}</p>`).join('');
+                  proj.items.push({
+                    id: 'sc_imp_' + Date.now() + '_' + idx,
+                    type: 'scene',
+                    parentId: null,
+                    title: scTitle.replace(/^#\s+/, ''),
+                    synopsis: 'Imported from ' + file.name,
+                    notes: '',
+                    label: 'sky',
+                    status: 'First Draft',
+                    target: 1000,
+                    inTrash: false,
+                    content: bodyHtml || '<p></p>',
+                    snapshots: []
+                  });
+                });
+                saveState();
+                renderAll();
+                document.getElementById('projectModal').classList.add('hidden');
+                showToast('Imported scenes into Binder');
+              }
+            } catch (err) {
+              showToast('Could not parse file');
+            }
+          };
+          reader.readAsText(file);
+        });
+
+        // Compile Manuscript Modal
+        document.getElementById('btnOpenCompile').addEventListener('click', () => {
+          buildCompiledManuscript();
+          document.getElementById('compileModal').classList.remove('hidden');
+        });
+        document.getElementById('btnCloseCompileModal').addEventListener('click', () => {
+          document.getElementById('compileModal').classList.add('hidden');
+        });
+        document.getElementById('compileSeparatorSelect').addEventListener('change', buildCompiledManuscript);
+        document.getElementById('compileHeadingSelect').addEventListener('change', buildCompiledManuscript);
+        document.getElementById('compileFormatSelect').addEventListener('change', buildCompiledManuscript);
+
+        document.getElementById('btnCopyCompiled').addEventListener('click', () => {
+          const area = document.getElementById('compilePreviewArea');
+          area.select();
+          try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(area.value).then(() => showToast('Manuscript copied to clipboard'));
+            } else {
+              document.execCommand('copy');
+              showToast('Manuscript copied to clipboard');
+            }
+          } catch (err) {
+            document.execCommand('copy');
+            showToast('Manuscript copied to clipboard');
+          }
+        });
+
+        document.getElementById('btnDownloadCompiled').addEventListener('click', () => {
+          const proj = getCurrentProject();
+          const fmt = document.getElementById('compileFormatSelect').value;
+          const content = document.getElementById('compilePreviewArea').value;
+          const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = proj.title.toLowerCase().replace(/[^a-z0-9]+/g, '_') + '.' + fmt;
+          a.click();
+          URL.revokeObjectURL(url);
+          showToast('Manuscript downloaded');
+        });
+
+        // Edit Project Target Modal
+        document.getElementById('btnEditProjectTarget').addEventListener('click', () => {
+          const proj = getCurrentProject();
+          document.getElementById('projectTargetModalInput').value = proj.targetWords || 15000;
+          document.getElementById('targetModal').classList.remove('hidden');
+        });
+        document.getElementById('btnCancelTargetModal').addEventListener('click', () => {
+          document.getElementById('targetModal').classList.add('hidden');
+        });
+        document.getElementById('btnSaveTargetModal').addEventListener('click', () => {
+          const proj = getCurrentProject();
+          const val = Math.max(500, Number(document.getElementById('projectTargetModalInput').value) || 15000);
+          proj.targetWords = val;
+          saveState();
+          renderBinder();
+          document.getElementById('targetModal').classList.add('hidden');
+          showToast('Updated manuscript target');
+        });
+
+        // Keyboard shortcuts (Escape exits Focus Mode, Ctrl+Shift+F toggles Focus Mode)
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && state.focusMode.active) {
+            exitFocusMode();
+          } else if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'f') {
+            e.preventDefault();
+            if (state.focusMode.active) exitFocusMode();
+            else enterFocusMode();
+          }
+        });
+      }
+
+
+      function initPermanentAppIcon() {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = 256;
+          canvas.height = 256;
+          const ctx = canvas.getContext('2d');
+
+          const r = 52;
+          ctx.beginPath();
+          ctx.moveTo(r, 0);
+          ctx.lineTo(256 - r, 0);
+          ctx.quadraticCurveTo(256, 0, 256, r);
+          ctx.lineTo(256, 256 - r);
+          ctx.quadraticCurveTo(256, 256, 256 - r, 256);
+          ctx.lineTo(r, 256);
+          ctx.quadraticCurveTo(0, 256, 0, 256 - r);
+          ctx.lineTo(0, r);
+          ctx.quadraticCurveTo(0, 0, r, 0);
+          ctx.closePath();
+          ctx.clip();
+
+          ctx.fillStyle = '#231b14';
+          ctx.fillRect(0, 0, 256, 256);
+
+          const palettes = ['#f5ebd6', '#ead8b8', '#f2e2c4', '#dfc79e', '#efe0c6'];
+          const sampleWords = ['kohta', 'minne', 'palimpsest', 'historia', 'verba', 'lumina', 'tempo', 'silenzio'];
+          const rays = 28;
+
+          for (let i = 0; i < rays; i++) {
+            ctx.save();
+            ctx.translate(128, 128);
+            ctx.rotate((i / rays) * Math.PI * 2);
+            ctx.fillStyle = palettes[i % palettes.length];
+            ctx.strokeStyle = 'rgba(70, 45, 20, 0.35)';
+            ctx.lineWidth = 1.5;
+            ctx.fillRect(10, -14, 240, 26);
+            ctx.strokeRect(10, -14, 240, 26);
+
+            ctx.fillStyle = 'rgba(42, 32, 23, 0.72)';
+            ctx.font = 'italic 9px Georgia, serif';
+            for (let x = 24; x < 220; x += 42) {
+              ctx.fillText(sampleWords[(i + x) % sampleWords.length], x, -2);
+              ctx.fillText(sampleWords[(i + x + 3) % sampleWords.length], x, 8);
+            }
+            ctx.restore();
+          }
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(128, 128, 56, 0, Math.PI * 2);
+          ctx.fillStyle = '#2c1d14';
+          ctx.shadowColor = 'rgba(0,0,0,0.55)';
+          ctx.shadowBlur = 12;
+          ctx.fill();
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = '#d4a853';
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.arc(128, 128, 47, 0, Math.PI * 2);
+          ctx.lineWidth = 1.2;
+          ctx.strokeStyle = 'rgba(212, 168, 83, 0.6)';
+          ctx.stroke();
+
+          ctx.fillStyle = '#eab65b';
+          ctx.font = 'bold 68px Georgia, serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('S', 128, 132);
+          ctx.restore();
+
+          const dataUrl = canvas.toDataURL('image/png');
+          const brandImg = document.getElementById('headerBrandIcon');
+          if (brandImg) brandImg.src = dataUrl;
+          const fav = document.getElementById('dynamicFavicon');
+          if (fav) fav.href = dataUrl;
+          const touch = document.getElementById('dynamicTouchIcon');
+          if (touch) touch.href = dataUrl;
+        } catch (err) {
+          // Ignore canvas errors
+        }
+      }
+
+
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('sw.js').catch(() => {});
+        });
+      }
+
+      // Initialize App
+      loadState();
+      initPermanentAppIcon();
+      document.getElementById('focusModeOverlay').classList.add('hidden');
+      initEvents();
+      renderAll();
+    })();
+  </script>
+
+</body></html>
